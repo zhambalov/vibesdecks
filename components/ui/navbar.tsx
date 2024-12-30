@@ -11,7 +11,7 @@ export function NavBar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="text-xl font-medium">
           Vibes Decks
-          <span className="text-sm text-sky-400 ml-2">by Pudgy Penguins</span>
+          <span className="text-sm text-sky-400 ml-2">by community</span>
         </Link>
 
         <div className="flex items-center gap-6">
