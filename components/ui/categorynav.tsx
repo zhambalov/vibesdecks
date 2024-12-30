@@ -1,18 +1,18 @@
+// components/ui/CategoryNav.tsx
 'use client'
 
 interface CategoryNavProps {
   activeCategory: string;
   setActiveCategory: (category: string) => void;
-  isDarkMode: boolean;
+  // Remove isDarkMode from props
 }
 
-export function CategoryNav({ activeCategory, setActiveCategory, isDarkMode }: CategoryNavProps) {
+export function CategoryNav({ activeCategory, setActiveCategory }: CategoryNavProps) {
   const categories = [
     { id: 'all', label: 'All decks' },
     { 
       id: 'mixed', 
       label: 'Mixed',
-      // Special rainbow circle with light center effect
       circle: <div className="w-3 h-3 rounded-full bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 relative overflow-hidden">
         <div className="absolute inset-[2px] bg-white rounded-full opacity-70"></div>
       </div>
@@ -25,7 +25,7 @@ export function CategoryNav({ activeCategory, setActiveCategory, isDarkMode }: C
   ]
 
   return (
-    <div className={`flex items-center justify-center gap-8 p-4 rounded-full mb-12 bg-white shadow-sm`}>
+    <div className="flex items-center justify-center gap-8 p-4 rounded-full mb-12 bg-white shadow-sm">
       {categories.map((category) => (
         <button
           key={category.id}

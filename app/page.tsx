@@ -13,7 +13,6 @@ export default function Home() {
           <CategoryNav 
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
-            isDarkMode={false}  
           />
         </div>
       </div>
