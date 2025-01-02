@@ -1,6 +1,7 @@
 import { Footer } from '@/components/ui/footer'
 import { NavBar } from '@/components/ui/navbar'
 import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/contexts/auth-context'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
@@ -25,13 +26,15 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <div className="min-h-screen flex flex-col">
-            <NavBar />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
+          <AuthProvider>
+            <div className="min-h-screen flex flex-col">
+              <NavBar />
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
