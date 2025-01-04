@@ -23,12 +23,13 @@ interface CardType {
 
 interface DeckType {
   id: string;
-  name: string;
-  description?: string;
-  userId: string;
-  color: CardColor;
   title: string;
+  description?: string;
+  color: CardColor;
   user: {
+    username: string;
+  };
+  author: {
     username: string;
   };
 }
@@ -36,8 +37,6 @@ interface DeckType {
 interface CommentType {
   id: string;
   content: string;
-  deckId: string;
-  userId: string;
   createdAt: string;
   user: {
     username: string;
@@ -84,7 +83,17 @@ export default function AdminCardsPage() {
       const response = await fetch('/api/decks')
       if (!response.ok) throw new Error('Failed to fetch decks')
       const data = await response.json()
-      setDecks(data)
+      
+      // Validate the data structure
+      const validDecks = data.filter((deck: any) => {
+        if (!deck.user || !deck.user.username) {
+          console.error('Invalid deck data:', deck)
+          return false
+        }
+        return true
+      })
+      
+      setDecks(validDecks)
     } catch (error) {
       console.error('Error fetching decks:', error)
       toast({
@@ -100,7 +109,17 @@ export default function AdminCardsPage() {
       const response = await fetch('/api/comments')
       if (!response.ok) throw new Error('Failed to fetch comments')
       const data = await response.json()
-      setComments(data)
+      
+      // Validate the data structure
+      const validComments = data.filter((comment: any) => {
+        if (!comment.user || !comment.user.username || !comment.deck || !comment.deck.title) {
+          console.error('Invalid comment data:', comment)
+          return false
+        }
+        return true
+      })
+      
+      setComments(validComments)
     } catch (error) {
       console.error('Error fetching comments:', error)
       toast({

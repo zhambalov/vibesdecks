@@ -18,7 +18,15 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json(decks)
+    // Transform the data to ensure consistent structure
+    const transformedDecks = decks.map(deck => ({
+      ...deck,
+      user: {
+        username: deck.author.username
+      }
+    }))
+
+    return NextResponse.json(transformedDecks)
   } catch (error) {
     console.error('Failed to fetch decks:', error)
     return NextResponse.json({ error: 'Failed to fetch decks' }, { status: 500 })
