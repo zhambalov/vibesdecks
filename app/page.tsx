@@ -22,16 +22,16 @@ export default function Home() {
  const getCollectionStyle = (type: string) => {
    const styles = {
      penguin: isDarkMode 
-       ? 'bg-gradient-to-br from-sky-500/5 to-blue-500/10 hover:from-sky-500/10 hover:to-blue-500/15 border-blue-500/10' 
+       ? 'bg-white/[0.05] hover:bg-white/[0.08] border-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] bg-gradient-to-br from-sky-500/20 to-blue-500/10' 
        : 'bg-gradient-to-br from-sky-50 to-blue-100/50 hover:from-sky-100/80 hover:to-blue-200/50 border-blue-200/20',
      fish: isDarkMode 
-       ? 'bg-gradient-to-br from-emerald-500/5 to-green-500/10 hover:from-emerald-500/10 hover:to-green-500/15 border-emerald-500/10' 
+       ? 'bg-white/[0.05] hover:bg-white/[0.08] border-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] bg-gradient-to-br from-emerald-500/20 to-green-500/10' 
        : 'bg-gradient-to-br from-emerald-50 to-green-100/50 hover:from-emerald-100/80 hover:to-green-200/50 border-emerald-200/20',
      trending: isDarkMode 
-       ? 'bg-gradient-to-br from-amber-500/5 to-orange-500/10 hover:from-amber-500/10 hover:to-orange-500/15 border-orange-500/10' 
+       ? 'bg-white/[0.05] hover:bg-white/[0.08] border-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] bg-gradient-to-br from-amber-500/20 to-orange-500/10' 
        : 'bg-gradient-to-br from-amber-50 to-orange-100/50 hover:from-amber-100/80 hover:to-orange-200/50 border-orange-200/20',
      brain: isDarkMode 
-       ? 'bg-gradient-to-br from-purple-500/5 to-violet-500/10 hover:from-purple-500/10 hover:to-violet-500/15 border-violet-500/10' 
+       ? 'bg-white/[0.05] hover:bg-white/[0.08] border-white/[0.08] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)] bg-gradient-to-br from-purple-500/20 to-violet-500/10' 
        : 'bg-gradient-to-br from-purple-50 to-violet-100/50 hover:from-purple-100/80 hover:to-violet-200/50 border-violet-200/20'
    };
    return styles[type as keyof typeof styles] || styles.penguin;
@@ -55,15 +55,19 @@ export default function Home() {
          {featuredCollections.map((collection) => (
            <Card
              key={collection.title}
-             className={`group p-6 transition-all duration-300 cursor-pointer backdrop-blur-sm border ${getCollectionStyle(collection.type)}`}
+             className={`group p-6 transition-all duration-300 cursor-pointer backdrop-blur-xl ${getCollectionStyle(collection.type)}`}
            >
              <div className="flex flex-col gap-3">
                <span className="text-2xl">{collection.emoji}</span>
                <div>
-                 <h3 className="font-medium mb-1 group-hover:translate-x-0.5 transition-transform">
+                 <h3 className={`font-medium mb-1 group-hover:translate-x-0.5 transition-transform ${
+                   isDarkMode ? 'text-gray-100' : ''
+                 }`}>
                    {collection.title}
                  </h3>
-                 <p className="text-sm text-muted-foreground group-hover:translate-x-0.5 transition-transform">
+                 <p className={`text-sm group-hover:translate-x-0.5 transition-transform ${
+                   isDarkMode ? 'text-gray-400' : 'text-muted-foreground'
+                 }`}>
                    {collection.decks} decks
                  </p>
                </div>

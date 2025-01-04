@@ -23,10 +23,10 @@ export function Footer() {
   const isDarkMode = theme === 'dark'
 
   return (
-    <footer className={`border-t mt-20 backdrop-blur-md transition-all duration-300 ${
+    <footer className={`mt-20 transition-all duration-300 ${
       isDarkMode 
-        ? 'bg-gray-900/40 border-gray-800/40' 
-        : 'bg-white/60 border-gray-200/40'
+        ? 'bg-gray-900 shadow-[0_-2px_6px_rgba(0,0,0,0.08)]' 
+        : 'bg-white shadow-[0_-2px_6px_rgba(0,0,0,0.03)]'
     }`}>
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-center gap-6 py-6">

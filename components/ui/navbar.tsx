@@ -57,10 +57,11 @@ export function NavBar() {
  const isDarkMode = theme === 'dark'
 
  return (
-   <header className={`sticky top-0 z-50 border-b ${
-     isDarkMode ? 'bg-gray-900/90 border-gray-700' : 
-                  'bg-white/90 border-gray-200'
-   } backdrop-blur-md`}>
+   <header className={`sticky top-0 z-50 border-b transition-colors duration-200 ${
+     isDarkMode 
+       ? 'bg-gray-900/60 border-gray-800/20' 
+       : 'bg-white/60 border-gray-200/20'
+   } backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-opacity-50`}>
      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
        <div className="flex items-center gap-4">
          <Link href="/">
@@ -74,15 +75,9 @@ export function NavBar() {
        </div>
        
        <div className="flex items-center h-full gap-4">
-         {username && (
-           <Link href="/decks/new">
-             <Button variant="outline">Create Deck</Button>
-           </Link>
-         )}
-         
          <div className="relative">
            <form onSubmit={(e) => e.preventDefault()} className="relative">
-             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${
+             <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
                isDarkMode ? 'text-gray-400' : 'text-gray-500'
              }`} />
              <input
@@ -90,7 +85,7 @@ export function NavBar() {
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
                placeholder="Find decks..."
-               className={`pl-10 pr-4 py-2.5 w-64 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all
+               className={`pl-8 pr-3 py-1.5 w-48 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
                  ${isDarkMode ? 
                    'bg-gray-800/70 border-gray-700 text-white placeholder:text-gray-400' : 
                    'bg-gray-50/70 border-gray-200 placeholder:text-gray-500'}`}
@@ -98,8 +93,10 @@ export function NavBar() {
            </form>
 
            {(searchQuery && searchResults.length > 0) && (
-             <div className={`absolute top-full mt-2 w-96 rounded-lg shadow-lg border ${
-               isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+             <div className={`absolute top-full mt-2 w-96 rounded-lg border backdrop-blur-xl backdrop-saturate-150 ${
+               isDarkMode 
+                 ? 'bg-gray-900/60 border-gray-800/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
+                 : 'bg-white/60 border-gray-200/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
              }`}>
                <div className="p-2 max-h-96 overflow-y-auto">
                  {searchResults.map((deck) => (
@@ -109,8 +106,10 @@ export function NavBar() {
                      className="block"
                      onClick={() => setSearchQuery('')}
                    >
-                     <Card className={`p-3 mb-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                       isDarkMode ? 'bg-gray-900' : 'bg-white'
+                     <Card className={`p-3 mb-2 transition-all duration-200 ${
+                       isDarkMode 
+                         ? 'bg-gray-800/40 hover:bg-gray-800/60' 
+                         : 'bg-white/40 hover:bg-white/60'
                      }`}>
                        <div className="flex items-center justify-between">
                          <h3 className="font-medium">{deck.title}</h3>
@@ -133,6 +132,21 @@ export function NavBar() {
              </div>
            )}
          </div>
+
+         {username && (
+           <Link href="/decks/new">
+             <Button 
+               variant="outline" 
+               className={`transition-all duration-200 px-4 py-2 text-sm ${
+                 isDarkMode 
+                   ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.1] text-gray-300 hover:text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' 
+                   : 'hover:bg-gray-50'
+               }`}
+             >
+               Create Deck
+             </Button>
+           </Link>
+         )}
          
          <Button 
            variant="ghost" 

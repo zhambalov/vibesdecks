@@ -71,7 +71,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className="min-h-screen flex flex-col">
+            <div className={`min-h-screen flex flex-col ${
+              'dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 ' +
+              'bg-gradient-to-b from-[#FAFBFF] to-[#FCFDFF]'
+            }`}>
               <NavBar />
               <main className="flex-1">
                 {children}

@@ -90,30 +90,51 @@ export function DeckCollection({
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-medium">
-          {filteredDecks.length} {activeCategory === 'all' ? 'decks' : `${activeCategory} decks`}
-        </h2>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className={`px-3 py-1 rounded-md border ${
-            isDarkMode 
-              ? 'bg-gray-800 border-gray-700 text-gray-200' 
-              : 'bg-white border-gray-200'
-          }`}
-        >
-          <option value="recent">Most Recent</option>
-          <option value="popular">Most Popular</option>
-        </select>
+      <div className="flex justify-start items-center mb-6">
+        <div className={`inline-flex rounded-full p-1 ${
+          isDarkMode 
+            ? 'bg-white/[0.03] border border-white/[0.08]' 
+            : 'bg-gray-100/50 border border-gray-200/50'
+        }`}>
+          <button
+            onClick={() => setSortBy('recent')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+              sortBy === 'recent'
+                ? isDarkMode
+                  ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]'
+                  : 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] text-gray-900'
+                : isDarkMode
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Most Recent
+          </button>
+          <button
+            onClick={() => setSortBy('popular')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+              sortBy === 'popular'
+                ? isDarkMode
+                  ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]'
+                  : 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] text-gray-900'
+                : isDarkMode
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Most Popular
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6 mb-24">
         {filteredDecks.map((deck) => (
           <Link href={`/decks/${deck.id}`} key={deck.id} className="block">
             <Card 
-              className={`p-6 hover:shadow-md transition-all cursor-pointer ${
-                isDarkMode ? 'bg-gray-800' : 'bg-white'
+              className={`p-6 transition-all cursor-pointer ${
+                isDarkMode 
+                  ? 'bg-gray-800 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.3)]' 
+                  : 'bg-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.12)]'
               }`}
             >
               <div className="flex flex-col gap-4">
