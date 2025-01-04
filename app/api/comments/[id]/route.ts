@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-async function isAdmin(request: Request): Promise<boolean> {
+async function isAdmin(request: NextRequest): Promise<boolean> {
   const authHeader = request.headers.get('Authorization')
   if (!authHeader) return false
 
@@ -16,9 +16,9 @@ async function isAdmin(request: Request): Promise<boolean> {
 }
 
 export async function DELETE(
-  request: Request,
-  context: { params: { id: string } }
-) {
+  request: NextRequest,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
   if (!await isAdmin(request)) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -28,7 +28,7 @@ export async function DELETE(
 
   try {
     await prisma.comment.delete({
-      where: { id: context.params.id }
+      where: { id: params.id }
     })
 
     return NextResponse.json({ success: true })
