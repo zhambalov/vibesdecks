@@ -166,7 +166,7 @@ export default function DeckPage() {
 
     fetchDeck()
     fetchComments()
-  }, [id, username])
+  }, [id, username, fetchComments, toast])
 
   useEffect(() => {
     async function fetchCards() {
@@ -459,6 +459,15 @@ export default function DeckPage() {
     recordView()
   }, [id, toast])
 
+  const toggleEditMode = () => {
+    setIsEditMode(prev => !prev)
+  }
+
+  const handleEditClick = () => {
+    router.push(`/decks/${deck?.id}/edit`)
+    toggleEditMode()
+  }
+
   if (isLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">
@@ -502,7 +511,7 @@ export default function DeckPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => router.push(`/decks/${deck.id}/edit`)}
+                    onClick={handleEditClick}
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
