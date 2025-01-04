@@ -7,6 +7,7 @@ export function middleware(request: NextRequest) {
     const authHeader = request.headers.get('Authorization')
     
     if (!authHeader) {
+      console.log('No auth header provided')
       return new NextResponse(null, {
         status: 401,
         headers: {
@@ -19,11 +20,20 @@ export function middleware(request: NextRequest) {
       const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64')
         .toString()
         .split(':')
+        .map(str => str.trim())
+
+      console.log('Attempting login with:', { 
+        providedUsername: username,
+        expectedUsername: process.env.ADMIN_USERNAME,
+        usernameMatch: username.toLowerCase() === process.env.ADMIN_USERNAME?.toLowerCase(),
+        passwordMatch: password === process.env.ADMIN_PASSWORD
+      })
 
       if (
-        username !== process.env.ADMIN_USERNAME || 
+        username.toLowerCase() !== process.env.ADMIN_USERNAME?.toLowerCase() || 
         password !== process.env.ADMIN_PASSWORD
       ) {
+        console.log('Credentials do not match')
         return new NextResponse(null, {
           status: 401,
           headers: {
@@ -31,7 +41,8 @@ export function middleware(request: NextRequest) {
           }
         })
       }
-    } catch {
+    } catch (error) {
+      console.error('Error processing auth:', error)
       return new NextResponse(null, {
         status: 401,
         headers: {

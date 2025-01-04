@@ -118,8 +118,7 @@ export default function AdminCardsPage() {
       const response = await fetch('/api/cards', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Basic ${btoa('pudgyadmin:bishamdaDurateb123!')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(newCard),
       })
@@ -154,10 +153,7 @@ export default function AdminCardsPage() {
 
     try {
       const response = await fetch(`/api/cards?id=${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Basic ${btoa('pudgyadmin:bishamdaDurateb123!')}`
-        }
+        method: 'DELETE'
       })
 
       if (!response.ok) {
@@ -186,10 +182,7 @@ export default function AdminCardsPage() {
 
     try {
       const response = await fetch(`/api/decks/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Basic ${btoa('pudgyadmin:bishamdaDurateb123!')}`
-        }
+        method: 'DELETE'
       })
 
       if (!response.ok) {
@@ -223,10 +216,7 @@ export default function AdminCardsPage() {
     for (const deck of decks) {
       try {
         const response = await fetch(`/api/decks/${deck.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Basic ${btoa('pudgyadmin:bishamdaDurateb123!')}`
-          }
+          method: 'DELETE'
         })
 
         if (response.ok) {
@@ -255,10 +245,7 @@ export default function AdminCardsPage() {
 
     try {
       const response = await fetch(`/api/comments/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Basic ${btoa('pudgyadmin:bishamdaDurateb123!')}`
-        }
+        method: 'DELETE'
       })
 
       if (!response.ok) {
