@@ -94,7 +94,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
           quantity: dc.quantity
         }))
       })
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching deck:', error)
       toast({
         title: "Error",

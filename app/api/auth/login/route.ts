@@ -9,7 +9,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
     }
 
-    const user = await prisma.user.findFirst({ where: { username } });
+    const user = await prisma.user.findFirst({ 
+      where: { username },
+      select: {
+        id: true,
+        username: true
+      }
+    });
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
@@ -19,8 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const { password: omitted, ...userWithoutPassword } = user;
-    return NextResponse.json({ user: userWithoutPassword }, { status: 200 });
+    return NextResponse.json({ user: user }, { status: 200 });
   } catch {
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }

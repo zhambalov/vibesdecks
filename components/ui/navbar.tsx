@@ -9,7 +9,6 @@ import { AuthPopovers } from '@/components/authpopovers'
 import { UserProfile } from '@/components/user-profile'
 import { useAuth } from '@/contexts/auth-context'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useDebouncedValue } from '@/hooks/use-debounce'
 import { Card } from "@/components/ui/card"
 import type { Deck, Like } from '@prisma/client'
@@ -27,7 +26,6 @@ export function NavBar() {
  const { username, logout } = useAuth()
  const [searchQuery, setSearchQuery] = useState('')
  const debouncedSearch = useDebouncedValue(searchQuery, 300)
- const router = useRouter()
  const [searchResults, setSearchResults] = useState<DeckWithAuthor[]>([])
 
  useEffect(() => {
