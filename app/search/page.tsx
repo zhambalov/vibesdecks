@@ -11,13 +11,10 @@ export default function SearchPage() {
     <div className="py-6">
       <div className="max-w-5xl mx-auto px-4">
         <h1 className="text-2xl font-bold mb-6">
-          Search results for "{query}"
+          Search results for &ldquo;{query}&rdquo;
         </h1>
         <DeckCollection activeCategory="all" searchQuery={query || ''} />
       </div>
-      <p className="text-sm text-muted-foreground">
-        No decks found for &quot;{searchParams.get('q')}&quot;
-      </p>
     </div>
   )
 } 

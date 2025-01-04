@@ -331,48 +331,8 @@ export default function DeckPage() {
     }
   }
 
-  const handleSaveEdit = async () => {
-    if (!username || !deck) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to edit decks",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/decks/${deck.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...editedDeck,
-          username,
-          cards: editedCards
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to update deck')
-      }
-      
-      const updatedDeck = await response.json()
-      setDeck(updatedDeck)
-      setIsEditMode(false)
-      
-      toast({
-        title: "Success",
-        description: "Deck updated successfully",
-      })
-    } catch (error) {
-      console.error('Error updating deck:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update deck",
-        variant: "destructive",
-      })
-    }
+  const handleSave = () => {
+    setIsEditMode(false)
   }
 
   const formatDescription = (text: string, cards: (DeckCard & { card: CardType })[]) => {
@@ -478,7 +438,7 @@ export default function DeckPage() {
       }
     }
     fetchData()
-  }, [id, toast])
+  }, [id, toast, fetchComments])
 
   useEffect(() => {
     async function recordView() {
@@ -531,6 +491,8 @@ export default function DeckPage() {
       </div>
     )
   }
+
+  const isOwner = username === deck.author.username
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
