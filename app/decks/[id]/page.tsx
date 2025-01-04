@@ -187,7 +187,7 @@ export default function DeckPage() {
     if (isEditMode) {
       fetchCards()
     }
-  }, [isEditMode])
+  }, [isEditMode, toast])
 
   const filteredCards = availableCards.filter(card => 
     card.name.toLowerCase().includes(cardSearchQuery.toLowerCase())

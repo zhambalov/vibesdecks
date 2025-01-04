@@ -17,7 +17,7 @@ async function isAdmin(request: Request): Promise<boolean> {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   if (!await isAdmin(request)) {
     return NextResponse.json(
@@ -28,7 +28,7 @@ export async function DELETE(
 
   try {
     await prisma.comment.delete({
-      where: { id: params.id }
+      where: { id: context.params.id }
     })
 
     return NextResponse.json({ success: true })
