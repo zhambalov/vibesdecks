@@ -461,11 +461,6 @@ export default function DeckPage() {
     }).filter(Boolean)
   }
 
-  const handleSave = async () => {
-    setIsEditMode(false)
-    await handleSaveEdit()
-  }
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -536,8 +531,6 @@ export default function DeckPage() {
       </div>
     )
   }
-
-  const isOwner = username === deck.author.username
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">

@@ -15,6 +15,9 @@ export default function SearchPage() {
         </h1>
         <DeckCollection activeCategory="all" searchQuery={query || ''} />
       </div>
+      <p className="text-sm text-muted-foreground">
+        No decks found for &quot;{searchParams.get('q')}&quot;
+      </p>
     </div>
   )
 } 

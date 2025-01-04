@@ -76,7 +76,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
         variant: "destructive"
       })
     }
-  }, [deckId, toast])
+  }, [deckId])
 
   useEffect(() => {
     if (mode === 'edit' && deckId) {
