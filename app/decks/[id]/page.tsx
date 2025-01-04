@@ -508,13 +508,15 @@ export default function DeckPage() {
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">{deck.title}</h1>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleEditClick}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
+                  {username === deck.author.username && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEditClick}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  )}
                   <span className={`w-3 h-3 rounded-full ${
                     deck.color === 'RED' ? 'bg-red-500' :
                     deck.color === 'BLUE' ? 'bg-blue-500' :
