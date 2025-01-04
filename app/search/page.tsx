@@ -1,9 +1,10 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DeckCollection } from '@/components/decks/deck-collection'
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q')
 
@@ -16,5 +17,13 @@ export default function SearchPage() {
         <DeckCollection activeCategory="all" searchQuery={query || ''} />
       </div>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense>
+      <SearchContent />
+    </Suspense>
   )
 } 
