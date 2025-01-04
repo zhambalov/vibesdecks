@@ -13,7 +13,8 @@ export async function POST(request: Request) {
       where: { username },
       select: {
         id: true,
-        username: true
+        username: true,
+        password: true
       }
     });
     if (!user) {
