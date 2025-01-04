@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -54,33 +54,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
   const [availableCards, setAvailableCards] = useState<CardOption[]>([])
   const [cardSearchQuery, setCardSearchQuery] = useState('')
 
-  useEffect(() => {
-    if (mode === 'edit' && deckId) {
-      fetchDeck()
-    }
-  }, [mode, deckId])
-
-  useEffect(() => {
-    async function fetchAvailableCards() {
-      try {
-        const response = await fetch('/api/cards')
-        if (!response.ok) throw new Error('Failed to fetch cards')
-        const data = await response.json()
-        setAvailableCards(data)
-      } catch (error) {
-        console.error('Error fetching cards:', error)
-        toast({
-          title: "Error",
-          description: "Failed to load available cards",
-          variant: "destructive"
-        })
-      }
-    }
-
-    fetchAvailableCards()
-  }, [])
-
-  async function fetchDeck() {
+  const fetchDeck = useCallback(async () => {
     try {
       const response = await fetch(`/api/decks/${deckId}`)
       if (!response.ok) throw new Error('Failed to fetch deck')
@@ -102,7 +76,33 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
         variant: "destructive"
       })
     }
-  }
+  }, [deckId, toast])
+
+  useEffect(() => {
+    if (mode === 'edit' && deckId) {
+      fetchDeck()
+    }
+  }, [mode, deckId, fetchDeck])
+
+  useEffect(() => {
+    async function fetchAvailableCards() {
+      try {
+        const response = await fetch('/api/cards')
+        if (!response.ok) throw new Error('Failed to fetch cards')
+        const data = await response.json()
+        setAvailableCards(data)
+      } catch (error) {
+        console.error('Error fetching cards:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load available cards",
+          variant: "destructive"
+        })
+      }
+    }
+
+    fetchAvailableCards()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

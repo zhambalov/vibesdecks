@@ -466,7 +466,47 @@ export default function DeckPage() {
     await handleSaveEdit()
   }
 
-  const isAuthenticated = !!username
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await fetch(`/api/decks/${id}/comments`)
+        if (!response.ok) throw new Error('Failed to fetch comments')
+        const data = await response.json()
+        setComments(data)
+      } catch (error) {
+        console.error('Error fetching comments:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load comments",
+          variant: "destructive",
+        })
+      }
+    }
+    fetchData()
+  }, [id, toast])
+
+  useEffect(() => {
+    async function recordView() {
+      try {
+        const sessionId = getOrCreateSessionId()
+        if (!sessionId) return
+        
+        await fetch(`/api/decks/${id}/views`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        })
+      } catch (error) {
+        console.error('Error recording view:', error)
+        toast({
+          title: "Error",
+          description: "Failed to record view",
+          variant: "destructive"
+        })
+      }
+    }
+    recordView()
+  }, [id, toast])
 
   if (isLoading) {
     return (
