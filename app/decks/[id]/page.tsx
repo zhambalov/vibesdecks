@@ -1,7 +1,7 @@
 'use client'
 
 import type { DeckColor } from '@prisma/client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useTheme } from 'next-themes'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -123,7 +123,7 @@ export default function DeckPage() {
     }
   }, [deck])
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/decks/${id}/comments`)
       if (!response.ok) throw new Error('Failed to fetch comments')
@@ -137,7 +137,7 @@ export default function DeckPage() {
         variant: "destructive",
       })
     }
-  }
+  }, [id, toast])
 
   useEffect(() => {
     async function fetchDeck() {
@@ -331,10 +331,6 @@ export default function DeckPage() {
     }
   }
 
-  const handleSave = () => {
-    setIsEditMode(false)
-  }
-
   const formatDescription = (text: string, cards: (DeckCard & { card: CardType })[]) => {
     if (!text) return null
     
@@ -491,8 +487,6 @@ export default function DeckPage() {
       </div>
     )
   }
-
-  const isOwner = username === deck.author.username
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">

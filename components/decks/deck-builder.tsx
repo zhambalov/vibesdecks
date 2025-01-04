@@ -76,7 +76,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
         variant: "destructive"
       })
     }
-  }, [deckId, toast])
+  }, [deckId])
 
   useEffect(() => {
     if (mode === 'edit' && deckId) {
@@ -225,7 +225,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                   <div className="bg-secondary/20 rounded-lg p-4 mb-2 text-sm space-y-2">
                     <p className="font-medium">Tips for a great deck description:</p>
                     <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                      <li>Start with a brief overview of your deck's main strategy</li>
+                      <li>Start with a brief overview of your deck&apos;s main strategy</li>
                       <li>Explain key card combinations and how they work together</li>
                       <li>Share tips about the mulligan phase and what cards to look for</li>
                       <li>Describe matchups against different deck types</li>
