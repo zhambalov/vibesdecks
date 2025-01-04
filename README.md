@@ -1,3 +1,16 @@
+Frontend:
+* Next.js 15 with React for building the UI
+* TypeScript for type safety
+* Tailwind CSS for styling
+* shadcn/ui for pre-built, customizable components
+
+Backend (integrated in Next.js):
+* Server Components for efficient rendering
+* Server Actions for handling form submissions and data mutations
+* Prisma as ORM
+* PostgreSQL as database
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
