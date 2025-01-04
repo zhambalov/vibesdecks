@@ -461,6 +461,13 @@ export default function DeckPage() {
     }).filter(Boolean)
   }
 
+  const handleSave = async () => {
+    setIsEditMode(false)
+    await handleSaveEdit()
+  }
+
+  const isAuthenticated = !!username
+
   if (isLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-6">

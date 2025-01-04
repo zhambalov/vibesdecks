@@ -25,8 +25,8 @@ interface CardOption {
 }
 
 interface DeckCard {
-  cardId: string
-  quantity: number
+  cardId: string;
+  quantity: number;
 }
 
 interface DeckFormData {
@@ -89,7 +89,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
         title: deck.title,
         description: deck.description || '',
         color: deck.color,
-        cards: deck.cards.map((dc: any) => ({
+        cards: deck.cards.map((dc: { card: { id: string }, quantity: number }) => ({
           cardId: dc.card.id,
           quantity: dc.quantity
         }))
