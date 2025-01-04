@@ -15,17 +15,13 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
   )
 }
 
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
-
 export async function DELETE(
-  req: NextRequest,
-  context: RouteContext
-): Promise<NextResponse> {
-  if (!await isAdmin(req)) {
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const id = params.id
+  
+  if (!await isAdmin(request as NextRequest)) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
@@ -34,7 +30,7 @@ export async function DELETE(
 
   try {
     await prisma.comment.delete({
-      where: { id: context.params.id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })
