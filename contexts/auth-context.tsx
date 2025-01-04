@@ -18,8 +18,10 @@ export function AuthProvider(props: AuthProviderProps): React.ReactElement {
   const [username, setUsername] = React.useState<string | null>(null)
 
   React.useEffect(() => {
+    console.log('Loading username from localStorage')
     if (typeof window !== 'undefined') {
       const savedUsername = localStorage.getItem('username')
+      console.log('Saved username:', savedUsername)
       if (savedUsername) {
         setUsername(savedUsername)
       }

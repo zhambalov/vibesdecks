@@ -1,28 +1,22 @@
-export type DeckColor = 'red' | 'blue' | 'mixed' | 'yellow' | 'green' | 'purple' | 'all'
+export type DeckColor = 'red' | 'blue' | 'mixed' | 'yellow' | 'green' | 'purple' | 'grey';
 
 export interface Deck {
-  id: string
-  title: string
-  description: string
-  color: DeckColor
+  id: string;
+  title: string;
+  description?: string;
+  color: DeckColor;
   author: {
-    name: string | null
-  }
-  likes: number
-  views: number
-  createdAt: Date
-  updatedAt: Date
+    username: string;
+  };
+  likes: number;
+  views: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Filter {
-  id: DeckColor
-  label: string
-  dotColor: string
-}
-
-export interface FeaturedCategory {
-  id: string
-  title: string
-  count: number
-  color: string
+  id: DeckColor | 'all';
+  label: string;
+  color?: string;
+  circle?: React.ReactNode;
 }

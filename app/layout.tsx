@@ -1,6 +1,7 @@
 import { Footer } from '@/components/ui/footer'
 import { NavBar } from '@/components/ui/navbar'
 import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/contexts/auth-context'
 import './globals.css'
 import type { Metadata } from 'next'
@@ -34,6 +35,7 @@ export default function RootLayout({
               </main>
               <Footer />
             </div>
+            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>

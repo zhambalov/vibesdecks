@@ -4,13 +4,102 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL") // Used for general database operations
-  directUrl = env("DIRECT_URL")   // Used for migrations
+  url       = env("DATABASE_URL") 
+  directUrl = env("DIRECT_URL")   
+}
+
+enum CardColor {
+  RED
+  YELLOW
+  GREEN
+  BLUE
+  PURPLE
+  GREY
+  ROD
+  RELIC
+}
+
+enum DeckColor {
+  RED
+  YELLOW
+  GREEN
+  BLUE
+  PURPLE
+  MIXED
+}
+
+model Card {
+  id        String     @id @default(cuid())
+  name      String
+  color     CardColor
+  decks     DeckCard[]
+}
+
+model Deck {
+  id             String     @id @default(cuid())
+  title          String
+  description    String?    @db.Text
+  color          DeckColor
+  authorId       String
+  author         User       @relation(fields: [authorId], references: [id])
+  cards          DeckCard[]
+  likes         Like[]
+  comments      Comment[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  views          Int        @default(0)
+  viewedSessions String[]   @default([])
+}
+
+model DeckCard {
+  id          String   @id @default(cuid())
+  deckId      String
+  cardId      String
+  quantity    Int      @default(1)
+  notes       String?  @db.Text
+  deck        Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  card        Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([deckId, cardId])
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
+  id        String    @id @default(cuid())
+  username  String    @unique
   password  String
+  createdAt DateTime  @default(now())
+  decks     Deck[]
+  likes     Like[]
+  comments  Comment[]
+  isAdmin   Boolean   @default(false)
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  deckId    String
+  user      User     @relation(fields: [userId], references: [id])
+  deck      Deck     @relation(fields: [deckId], references: [id])
   createdAt DateTime @default(now())
+
+  @@unique([userId, deckId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String    @db.VarChar(600)
+  userId    String
+  deckId    String
+  parentId  String?
+  user      User      @relation(fields: [userId], references: [id])
+  deck      Deck      @relation(fields: [deckId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isHidden  Boolean   @default(false)
+
+  @@index([deckId])
+  @@index([userId])
+  @@index([parentId])
 }
