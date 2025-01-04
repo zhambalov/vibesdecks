@@ -130,7 +130,7 @@ export async function PUT(
     }
 
     const updatedDeck = await prisma.$transaction(async (tx) => {
-      const updated = await tx.deck.update({
+      await tx.deck.update({
         where: { id },
         data: { title, description, color }
       })

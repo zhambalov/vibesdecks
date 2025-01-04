@@ -19,9 +19,9 @@ export async function POST(request: Request) {
       data: { username, password: hashedPassword } 
     });
 
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: omitted, ...userWithoutPassword } = user;
     return NextResponse.json({ user: userWithoutPassword }, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
   }
 }

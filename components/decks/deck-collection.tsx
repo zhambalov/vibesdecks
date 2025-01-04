@@ -76,12 +76,6 @@ export function DeckCollection({
 
   const isDarkMode = theme === 'dark'
 
-  const truncateDescription = (text: string, maxLength: number = 100) => {
-    if (!text) return '';
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + '...';
-  };
-
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-6">

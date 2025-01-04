@@ -29,7 +29,6 @@ export function NavBar() {
  const debouncedSearch = useDebouncedValue(searchQuery, 300)
  const router = useRouter()
  const [searchResults, setSearchResults] = useState<DeckWithAuthor[]>([])
- const [isSearching, setIsSearching] = useState(false)
 
  useEffect(() => {
    setMounted(true)
@@ -42,7 +41,6 @@ export function NavBar() {
         return
       }
       
-      setIsSearching(true)
       try {
         const response = await fetch(`/api/decks/search?q=${encodeURIComponent(debouncedSearch)}`)
         if (!response.ok) throw new Error('Search failed')
@@ -50,20 +48,11 @@ export function NavBar() {
         setSearchResults(data)
       } catch (error) {
         console.error('Search error:', error)
-      } finally {
-        setIsSearching(false)
       }
     }
 
     performSearch()
   }, [debouncedSearch])
-
- const handleSearch = (e: React.FormEvent) => {
-   e.preventDefault()
-   if (searchQuery.trim()) {
-     router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-   }
- }
 
  if (!mounted) return null
 

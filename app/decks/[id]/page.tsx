@@ -11,14 +11,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from "@/hooks/use-toast"
 import type { Deck, Card as CardType, DeckCard, Like, Comment } from '@prisma/client'
-import { Edit, Eye, Heart, Copy, Save, X, Plus, Minus } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Edit, Eye, Heart, Copy, Plus, Minus } from 'lucide-react'
 
 interface DeckWithDetails extends Omit<Deck, 'description'> {
   author: {

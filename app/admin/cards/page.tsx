@@ -15,10 +15,42 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { Trash2 } from 'lucide-react'
 
+interface CardType {
+  id: string;
+  name: string;
+  color: CardColor;
+}
+
+interface DeckType {
+  id: string;
+  name: string;
+  description?: string;
+  userId: string;
+  color: CardColor;
+  title: string;
+  user: {
+    username: string;
+  };
+}
+
+interface CommentType {
+  id: string;
+  content: string;
+  deckId: string;
+  userId: string;
+  createdAt: string;
+  user: {
+    username: string;
+  };
+  deck: {
+    title: string;
+  };
+}
+
 export default function AdminCardsPage() {
-  const [cards, setCards] = useState<any[]>([])
-  const [decks, setDecks] = useState<any[]>([])
-  const [comments, setComments] = useState<any[]>([])
+  const [cards, setCards] = useState<CardType[]>([])
+  const [decks, setDecks] = useState<DeckType[]>([])
+  const [comments, setComments] = useState<CommentType[]>([])
   const [newCard, setNewCard] = useState<{ name: string; color: CardColor }>({ 
     name: '', 
     color: CardColor.RED 
@@ -364,7 +396,7 @@ export default function AdminCardsPage() {
                 }`} />
                 <div>
                   <span className="font-medium">{deck.title}</span>
-                  <p className="text-sm text-gray-500">by {deck.author.username}</p>
+                  <p className="text-sm text-gray-500">by {deck.user.username}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">

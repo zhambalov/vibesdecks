@@ -32,7 +32,9 @@ export async function POST(
     })
 
     let liked: boolean
-    let likesCount: number
+    const likesCount = await prisma.like.count({
+      where: { deckId: params.id }
+    })
 
     if (existingLike) {
       // Unlike
@@ -55,11 +57,6 @@ export async function POST(
       })
       liked = true
     }
-
-    // Get accurate count
-    likesCount = await prisma.like.count({
-      where: { deckId: params.id }
-    })
 
     return NextResponse.json({ liked, likesCount })
 

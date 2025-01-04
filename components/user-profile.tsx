@@ -6,6 +6,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { useTheme } from 'next-themes'
+import Image from 'next/image'
 
 interface UserProfileProps {
   username: string
@@ -24,11 +25,13 @@ export function UserProfile({ username, onLogout }: UserProfileProps) {
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-200 rounded-full overflow-hidden">
-            <img 
+            <Image 
               src="/penguin-avatar.svg" 
               alt="Profile"
-              className="w-full h-full scale-[2.5] translate-y-1 pointer-events-none"
-              draggable="false"
+              width={40}
+              height={40}
+              className="scale-[2.5] translate-y-1 pointer-events-none"
+              draggable={false}
             />
           </div>
         </div>
@@ -45,11 +48,13 @@ export function UserProfile({ username, onLogout }: UserProfileProps) {
         <div className="p-3">
           <div className="flex flex-col items-center gap-2">
             <div className="w-16 h-16 rounded-full overflow-hidden select-none bg-gradient-to-br from-blue-400 to-blue-200">
-              <img 
+              <Image 
                 src="/penguin-avatar.svg" 
                 alt="Profile"
-                className="w-full h-full scale-[2.5] translate-y-1 pointer-events-none"
-                draggable="false"
+                width={64}
+                height={64}
+                className="scale-[2.5] translate-y-1 pointer-events-none"
+                draggable={false}
               />
             </div>
             <span className={`text-sm font-medium ${
