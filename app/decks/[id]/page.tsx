@@ -550,32 +550,32 @@ export default function DeckPage() {
 
               {/* Stats Row */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   {username && (
                     <Button 
                       variant="outline"
                       size="sm"
                       onClick={handleLike}
-                      className={deck.liked ? 'bg-red-500/10 hover:bg-red-500/20' : ''}
+                      className={`h-8 px-2 ${deck.liked ? 'bg-red-500/10 hover:bg-red-500/20' : ''}`}
                     >
                       <Heart 
-                        className={`w-4 h-4 mr-2 ${deck.liked ? 'fill-current text-red-500' : ''}`}
+                        className={`w-3.5 h-3.5 mr-1.5 ${deck.liked ? 'fill-current text-red-500' : ''}`}
                       />
                       {deck.likesCount}
                     </Button>
                   )}
                   
-                  <span className="flex items-center gap-1 text-sm text-gray-500">
-                    <Eye className="w-4 h-4" />
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Eye className="w-3.5 h-3.5" />
                     {deck.views}
-                  </span>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Button 
                     variant="outline"
                     size="sm"
-                    className="sm:hidden"
+                    className="sm:hidden h-8 px-2"
                     onClick={() => setShowMobileCards(!showMobileCards)}
                   >
                     {showMobileCards ? 'Hide Cards' : 'View Cards'}
@@ -584,8 +584,9 @@ export default function DeckPage() {
                     variant="outline"
                     size="sm"
                     onClick={copyDeckToClipboard}
+                    className="h-8 px-2"
                   >
-                    <Copy className="w-4 h-4 mr-2" />
+                    <Copy className="w-3.5 h-3.5 mr-1.5" />
                     Copy Deck
                   </Button>
                 </div>

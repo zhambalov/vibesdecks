@@ -17,6 +17,7 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
 import { Minus, Plus } from "lucide-react"
+import { useTheme } from 'next-themes'
 
 interface CardOption {
   id: string
@@ -44,6 +45,8 @@ interface Props {
 export function DeckBuilder({ mode = 'create', deckId }: Props) {
   const { username } = useAuth()
   const router = useRouter()
+  const { theme } = useTheme()
+  const isDarkMode = theme === 'dark'
   const [formData, setFormData] = useState<DeckFormData>({
     title: '',
     description: '',
@@ -202,18 +205,20 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
             {/* Mobile Cards Section */}
             {showMobileCards && (
               <div className="sm:hidden mb-6">
-                <Card className="p-4 bg-accent/10">
+                <Card className={`p-4 ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
                   <div className="mb-4">
-                    <Input
-                      type="text"
-                      value={cardSearchQuery}
-                      onChange={(e) => setCardSearchQuery(e.target.value)}
-                      placeholder="Search for cards..."
-                      className="w-full"
-                    />
-                    {cardSearchQuery && availableCards.length > 0 && (
-                      <div className="relative mt-1">
-                        <div className="absolute w-full z-10 bg-background rounded-md border shadow-lg max-h-60 overflow-auto">
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        value={cardSearchQuery}
+                        onChange={(e) => setCardSearchQuery(e.target.value)}
+                        placeholder="Search for cards..."
+                        className={`w-full ${isDarkMode ? 'bg-gray-800 text-white placeholder:text-gray-400' : 'bg-white text-gray-900 placeholder:text-gray-500'}`}
+                      />
+                      {cardSearchQuery && availableCards.length > 0 && (
+                        <div className={`absolute left-0 right-0 mt-1 z-10 rounded-md border shadow-lg max-h-60 overflow-y-auto ${
+                          isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                        }`}>
                           {availableCards
                             .filter(card => 
                               card.name.toLowerCase().includes(cardSearchQuery.toLowerCase())
@@ -267,7 +272,11 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                                   }
                                   setCardSearchQuery('')
                                 }}
-                                className="w-full px-3 py-2 text-left hover:bg-accent/50 flex items-center gap-2"
+                                className={`w-full px-3 py-2 text-left flex items-center gap-2 ${
+                                  isDarkMode 
+                                    ? 'hover:bg-gray-700/50' 
+                                    : 'hover:bg-gray-100'
+                                }`}
                               >
                                 <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
                                   card.color === 'RED' ? 'bg-red-500' :
@@ -280,12 +289,12 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                                   card.color === 'RELIC' ? 'bg-black' :
                                   'bg-gray-500'
                                 }`} />
-                                <span>{card.name}</span>
+                                <span className={isDarkMode ? 'text-gray-100' : 'text-gray-900'}>{card.name}</span>
                               </button>
                             ))}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2 max-h-[40vh] overflow-y-auto">
@@ -538,79 +547,85 @@ Alternative Cards:
                     value={cardSearchQuery}
                     onChange={(e) => setCardSearchQuery(e.target.value)}
                     placeholder="Search for cards..."
-                    className="w-full"
+                    className={`w-full ${isDarkMode ? 'bg-gray-800 text-white placeholder:text-gray-400' : 'bg-white text-gray-900 placeholder:text-gray-500'}`}
                   />
                   {cardSearchQuery && availableCards.length > 0 && (
-                    <div className="absolute top-full mt-1 w-full z-10 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 shadow-lg max-h-60 overflow-auto">
+                    <div className={`absolute left-0 right-0 mt-1 z-10 rounded-md border shadow-lg max-h-60 overflow-y-auto ${
+                      isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                    }`}>
                       {availableCards
                         .filter(card => 
                           card.name.toLowerCase().includes(cardSearchQuery.toLowerCase())
                         )
                         .map(card => (
-                        <button
-                          key={card.id}
-                          type="button"
-                          onClick={() => {
-                            const existingCard = formData.cards.find(c => c.cardId === card.id)
-                            const currentTotal = formData.cards.reduce((total, card) => total + card.quantity, 0)
+                          <button
+                            key={card.id}
+                            type="button"
+                            onClick={() => {
+                              const existingCard = formData.cards.find(c => c.cardId === card.id)
+                              const currentTotal = formData.cards.reduce((total, card) => total + card.quantity, 0)
 
-                            if (existingCard) {
-                              if (existingCard.quantity >= 4) {
-                                toast({
-                                  title: "Maximum reached",
-                                  description: "You can only have 4 copies of a card",
-                                  variant: "destructive"
-                                })
-                                return
+                              if (existingCard) {
+                                if (existingCard.quantity >= 4) {
+                                  toast({
+                                    title: "Maximum reached",
+                                    description: "You can only have 4 copies of a card",
+                                    variant: "destructive"
+                                  })
+                                  return
+                                }
+                                if (currentTotal >= 52) {
+                                  toast({
+                                    title: "Deck is full",
+                                    description: "Maximum deck size is 52 cards",
+                                    variant: "destructive"
+                                  })
+                                  return
+                                }
+                                setFormData(prev => ({
+                                  ...prev,
+                                  cards: prev.cards.map(c => 
+                                    c.cardId === card.id 
+                                      ? { ...c, quantity: c.quantity + 1 }
+                                      : c
+                                  )
+                                }))
+                              } else {
+                                if (currentTotal >= 52) {
+                                  toast({
+                                    title: "Deck is full",
+                                    description: "Maximum deck size is 52 cards",
+                                    variant: "destructive"
+                                  })
+                                  return
+                                }
+                                setFormData(prev => ({
+                                  ...prev,
+                                  cards: [...prev.cards, { cardId: card.id, quantity: 1 }]
+                                }))
                               }
-                              if (currentTotal >= 52) {
-                                toast({
-                                  title: "Deck is full",
-                                  description: "Maximum deck size is 52 cards",
-                                  variant: "destructive"
-                                })
-                                return
-                              }
-                              setFormData(prev => ({
-                                ...prev,
-                                cards: prev.cards.map(c => 
-                                  c.cardId === card.id 
-                                    ? { ...c, quantity: c.quantity + 1 }
-                                    : c
-                                )
-                              }))
-                            } else {
-                              if (currentTotal >= 52) {
-                                toast({
-                                  title: "Deck is full",
-                                  description: "Maximum deck size is 52 cards",
-                                  variant: "destructive"
-                                })
-                                return
-                              }
-                              setFormData(prev => ({
-                                ...prev,
-                                cards: [...prev.cards, { cardId: card.id, quantity: 1 }]
-                              }))
-                            }
-                            setCardSearchQuery('')
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
-                        >
-                          <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                            card.color === 'RED' ? 'bg-red-500' :
-                            card.color === 'BLUE' ? 'bg-blue-500' :
-                            card.color === 'GREEN' ? 'bg-green-500' :
-                            card.color === 'YELLOW' ? 'bg-yellow-500' :
-                            card.color === 'PURPLE' ? 'bg-purple-500' :
-                            card.color === 'GREY' ? 'bg-gray-500' :
-                            card.color === 'ROD' ? 'bg-amber-700' :
-                            card.color === 'RELIC' ? 'bg-black' :
-                            'bg-gray-500'
-                          }`} />
-                          <span>{card.name}</span>
-                        </button>
-                      ))}
+                              setCardSearchQuery('')
+                            }}
+                            className={`w-full px-3 py-2 text-left flex items-center gap-2 ${
+                              isDarkMode 
+                                ? 'hover:bg-gray-700/50' 
+                                : 'hover:bg-gray-100'
+                            }`}
+                          >
+                            <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                              card.color === 'RED' ? 'bg-red-500' :
+                              card.color === 'BLUE' ? 'bg-blue-500' :
+                              card.color === 'GREEN' ? 'bg-green-500' :
+                              card.color === 'YELLOW' ? 'bg-yellow-500' :
+                              card.color === 'PURPLE' ? 'bg-purple-500' :
+                              card.color === 'GREY' ? 'bg-gray-500' :
+                              card.color === 'ROD' ? 'bg-amber-700' :
+                              card.color === 'RELIC' ? 'bg-black' :
+                              'bg-gray-500'
+                            }`} />
+                            <span className={isDarkMode ? 'text-gray-100' : 'text-gray-900'}>{card.name}</span>
+                          </button>
+                        ))}
                     </div>
                   )}
                 </div>
