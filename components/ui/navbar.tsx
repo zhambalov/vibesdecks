@@ -114,53 +114,6 @@ export function NavBar() {
                    'bg-gray-50/70 border-gray-200 placeholder:text-gray-500'}`}
              />
            </form>
-
-           {(searchResults.length > 0 && searchQuery) && (
-             <div className={`absolute ${
-               isSearchOpen 
-                 ? 'left-0 right-0 px-4 mx-auto max-w-[240px]' // Mobile view
-                 : 'sm:right-0 w-72' // Desktop view
-             } mt-2 rounded-lg border backdrop-blur-xl backdrop-saturate-150 z-50 ${
-               isDarkMode 
-                 ? 'bg-gray-900/60 border-gray-800/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
-                 : 'bg-white/60 border-gray-200/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
-             }`}>
-               <div className="p-2 max-h-[60vh] sm:max-h-96 overflow-y-auto">
-                 {searchResults.map((deck) => (
-                   <Link 
-                     key={deck.id} 
-                     href={`/decks/${deck.id}`}
-                     className="block"
-                     onClick={() => {
-                       setSearchQuery('')
-                       setIsSearchOpen(false)
-                     }}
-                   >
-                     <Card className={`p-2.5 mb-2 transition-all duration-200 ${
-                       isDarkMode 
-                         ? 'bg-gray-800/40 hover:bg-gray-800/60' 
-                         : 'bg-white/40 hover:bg-white/60'
-                     }`}>
-                       <div className="flex items-center justify-between">
-                         <h3 className="font-medium text-sm">{deck.title}</h3>
-                         <span className={`w-2 h-2 rounded-full ${
-                           deck.color === 'RED' ? 'bg-red-500' :
-                           deck.color === 'BLUE' ? 'bg-blue-500' :
-                           deck.color === 'GREEN' ? 'bg-green-500' :
-                           deck.color === 'YELLOW' ? 'bg-yellow-500' :
-                           deck.color === 'PURPLE' ? 'bg-purple-500' :
-                           'bg-gradient-to-r from-red-500 via-blue-500 to-green-500'
-                         }`} />
-                       </div>
-                       <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                         by {deck.author.username}
-                       </p>
-                     </Card>
-                   </Link>
-                 ))}
-               </div>
-             </div>
-           )}
          </div>
 
          <div className="hidden sm:flex items-center gap-4">
@@ -260,19 +213,76 @@ export function NavBar() {
      )}
 
      {isSearchOpen && (
-       <div className="sm:hidden border-t border-gray-800/20 bg-gray-900">
-         <form onSubmit={(e) => e.preventDefault()} className="px-4 py-1.5">
+       <div className={`sm:hidden fixed inset-x-0 top-16 border-t z-20 ${
+         isDarkMode 
+           ? 'border-gray-800/20 bg-gray-900' 
+           : 'border-gray-200/20 bg-white'
+       }`}>
+         <form onSubmit={(e) => e.preventDefault()} className="px-4 py-2">
            <div className="relative max-w-[240px] mx-auto">
-             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+             <Search className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
+               isDarkMode ? 'text-gray-400' : 'text-gray-500'
+             }`} />
              <input
                type="text"
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
                placeholder="Find decks..."
-               className="w-full bg-gray-800 text-white placeholder:text-gray-400 pl-8 pr-2.5 py-1.5 rounded-lg border-0 focus:outline-none text-sm"
+               className={`w-full rounded-lg border-0 focus:outline-none text-sm pl-8 pr-2.5 py-1.5 ${
+                 isDarkMode 
+                   ? 'bg-gray-800 text-white placeholder:text-gray-400' 
+                   : 'bg-gray-50 text-gray-900 placeholder:text-gray-500'
+               }`}
              />
            </div>
          </form>
+
+         {(searchResults.length > 0 && searchQuery) && (
+           <div className={`border-t ${
+             isDarkMode 
+               ? 'border-gray-800/20 bg-gray-900/95' 
+               : 'border-gray-200/20 bg-white/95'
+           } backdrop-blur-sm`}>
+             <div className="max-w-[240px] mx-auto px-4 py-2 max-h-[60vh] overflow-y-auto">
+               {searchResults.map((deck) => (
+                 <Link 
+                   key={deck.id} 
+                   href={`/decks/${deck.id}`}
+                   className="block"
+                   onClick={() => {
+                     setSearchQuery('')
+                     setIsSearchOpen(false)
+                   }}
+                 >
+                   <Card className={`p-2.5 mb-2 transition-all duration-200 ${
+                     isDarkMode 
+                       ? 'bg-gray-800/40 hover:bg-gray-800/60' 
+                       : 'bg-gray-50/40 hover:bg-gray-50/60'
+                   }`}>
+                     <div className="flex items-center justify-between">
+                       <div className="min-w-0 flex-1">
+                         <h3 className={`font-medium text-sm truncate ${
+                           isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                         }`}>{deck.title}</h3>
+                         <p className={`text-xs truncate ${
+                           isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                         }`}>by {deck.author.username}</p>
+                       </div>
+                       <span className={`ml-2 flex-shrink-0 w-2 h-2 rounded-full ${
+                         deck.color === 'RED' ? 'bg-red-500' :
+                         deck.color === 'BLUE' ? 'bg-blue-500' :
+                         deck.color === 'GREEN' ? 'bg-green-500' :
+                         deck.color === 'YELLOW' ? 'bg-yellow-500' :
+                         deck.color === 'PURPLE' ? 'bg-purple-500' :
+                         'bg-gradient-to-r from-red-500 via-blue-500 to-green-500'
+                       }`} />
+                     </div>
+                   </Card>
+                 </Link>
+               ))}
+             </div>
+           </div>
+         )}
        </div>
      )}
    </header>

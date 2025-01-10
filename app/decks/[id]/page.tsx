@@ -499,12 +499,12 @@ export default function DeckPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="flex flex-col sm:flex-row gap-6">
+    <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
         <div className="flex-1">
-          <Card className={`p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <Card className={`p-4 sm:p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             {/* Header Section */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {/* Title Row */}
               <div className="flex items-center justify-between">
                 <h1 className="text-xl sm:text-2xl font-bold">{deck.title}</h1>
@@ -514,8 +514,9 @@ export default function DeckPage() {
                       variant="ghost"
                       size="sm"
                       onClick={handleEditClick}
+                      className="h-8 w-8 p-0"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="h-4 w-4" />
                     </Button>
                   )}
                   <span className={`w-3 h-3 rounded-full ${
@@ -529,17 +530,17 @@ export default function DeckPage() {
                 </div>
               </div>
 
-              {/* Author and Dates */}
-              <div className="flex flex-col gap-3 text-sm">
+              {/* Author and Stats */}
+              <div className="flex flex-col gap-2">
                 <span className="font-medium">{deck.author.username}</span>
-                <div className="flex flex-col gap-1 text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <span>Created {new Date(deck.createdAt).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                   })}</span>
                   {deck.updatedAt > deck.createdAt && (
-                    <span>Last updated {new Date(deck.updatedAt).toLocaleDateString('en-US', {
+                    <span>· Updated {new Date(deck.updatedAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric'
@@ -549,14 +550,22 @@ export default function DeckPage() {
               </div>
 
               {/* Stats Row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center gap-3">
                   {username && (
                     <Button 
                       variant="outline"
                       size="sm"
                       onClick={handleLike}
-                      className={`h-8 px-2 ${deck.liked ? 'bg-red-500/10 hover:bg-red-500/20' : ''}`}
+                      className={`h-8 px-2.5 ${
+                        isDarkMode 
+                          ? deck.liked 
+                            ? 'bg-red-500/10 hover:bg-red-500/20 border-red-500/20' 
+                            : 'bg-gray-800 hover:bg-gray-700 border-gray-700'
+                          : deck.liked 
+                            ? 'bg-red-500/10 hover:bg-red-500/20' 
+                            : ''
+                      }`}
                     >
                       <Heart 
                         className={`w-3.5 h-3.5 mr-1.5 ${deck.liked ? 'fill-current text-red-500' : ''}`}
@@ -564,7 +573,6 @@ export default function DeckPage() {
                       {deck.likesCount}
                     </Button>
                   )}
-                  
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <Eye className="w-3.5 h-3.5" />
                     {deck.views}
@@ -575,34 +583,42 @@ export default function DeckPage() {
                   <Button 
                     variant="outline"
                     size="sm"
-                    className="sm:hidden h-8 px-2"
-                    onClick={() => setShowMobileCards(!showMobileCards)}
+                    onClick={copyDeckToClipboard}
+                    className={`h-8 px-2.5 ${
+                      isDarkMode 
+                        ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' 
+                        : ''
+                    }`}
                   >
-                    {showMobileCards ? 'Hide Cards' : 'View Cards'}
+                    <Copy className="w-3.5 h-3.5 mr-1.5" />
+                    Copy Deck
                   </Button>
                   <Button 
                     variant="outline"
                     size="sm"
-                    onClick={copyDeckToClipboard}
-                    className="h-8 px-2"
+                    className={`sm:hidden h-8 px-2.5 ${
+                      isDarkMode 
+                        ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' 
+                        : ''
+                    }`}
+                    onClick={() => setShowMobileCards(!showMobileCards)}
                   >
-                    <Copy className="w-3.5 h-3.5 mr-1.5" />
-                    Copy Deck
+                    {showMobileCards ? 'Hide Cards' : 'View Cards'}
                   </Button>
                 </div>
               </div>
 
               {/* Mobile Cards List */}
               {showMobileCards && (
-                <div className="sm:hidden mt-4">
-                  <Card className={`p-4 ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                <div className="sm:hidden mt-3">
+                  <Card className={`p-3 ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
                     <div className="flex items-center justify-between mb-2">
                       <h2 className="text-sm font-bold">Cards</h2>
                       <span className="text-xs text-muted-foreground">
                         {deck.cards.reduce((total, card) => total + card.quantity, 0)} total
                       </span>
                     </div>
-                    <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                    <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
                       {deck.cards.map(({ card, quantity }) => (
                         <div 
                           key={card.id}
@@ -623,7 +639,7 @@ export default function DeckPage() {
                               }`} />
                               <span className="font-medium text-sm truncate">{card.name}</span>
                             </div>
-                            <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-background">
+                            <span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full bg-background">
                               x{quantity}
                             </span>
                           </div>
@@ -637,34 +653,28 @@ export default function DeckPage() {
           </Card>
 
           {/* Description Section */}
-          {(deck.description || isEditMode) && (
-            <Card className={`mt-6 p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              {isEditMode ? (
-                <div className="space-y-4">
-                  <Textarea
-                    value={editedDeck.description || ''}
-                    onChange={(e) => setEditedDeck({ ...editedDeck, description: e.target.value })}
-                    placeholder="Add a description of your deck..."
-                    className="min-h-[200px] font-medium"
-                  />
-                </div>
-              ) : deck.description && (
-                <div className="prose dark:prose-invert max-w-none text-sm">
-                  {deck.description.split('\n').map((paragraph, index) => (
-                    paragraph && (
-                      <div key={index}>
-                        {formatDescription(paragraph, deck.cards)}
-                      </div>
-                    )
-                  ))}
-                </div>
-              )}
+          {deck.description && (
+            <Card className={`mt-4 sm:mt-6 p-4 sm:p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+              <div className="prose dark:prose-invert max-w-none text-sm 
+                [&_strong]:text-sm [&_strong]:font-semibold [&_strong]:text-blue-500/90 dark:[&_strong]:text-blue-400/90
+                [&_b]:text-sm [&_b]:font-medium
+                [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2
+                [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5"
+              >
+                {deck.description.split('\n').map((paragraph, index) => (
+                  paragraph && (
+                    <div key={index} className="mb-3 last:mb-0">
+                      {formatDescription(paragraph, deck.cards)}
+                    </div>
+                  )
+                ))}
+              </div>
             </Card>
           )}
 
           {/* Comments Section */}
-          <Card className={`mt-6 p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <h2 className="text-xl font-bold mb-4">Comments</h2>
+          <Card className={`mt-4 sm:mt-6 p-4 sm:p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <h2 className="text-lg font-bold mb-4">Comments</h2>
             
             {username && (
               <form onSubmit={handleComment} className="mb-6">
@@ -676,34 +686,34 @@ export default function DeckPage() {
                     }
                   }}
                   placeholder="Write a comment..."
-                  className="mb-2"
-                  rows={3}
+                  className="mb-2 min-h-[100px]"
                 />
                 <div className="flex justify-between items-center">
-                  <span className={`text-sm ${newComment.length > 600 ? 'text-red-500' : 'text-gray-500'}`}>
-                    {newComment.length}/600 characters
+                  <span className={`text-xs ${newComment.length > 600 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                    {newComment.length}/600
                   </span>
                   <Button
                     type="submit"
+                    size="sm"
                     disabled={!newComment.trim() || newComment.length > 600}
                   >
-                    Post Comment
+                    Post
                   </Button>
                 </div>
               </form>
             )}
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {comments.map((comment) => (
                 <div key={comment.id} className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{comment.user.username}</p>
-                      <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm">{comment.user.username}</p>
+                      <p className={`mt-1 text-sm break-words ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                         {comment.content}
                       </p>
                     </div>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDate(comment.createdAt)}
                     </span>
                   </div>
@@ -714,6 +724,7 @@ export default function DeckPage() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="h-7 px-2 text-xs"
                         onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                       >
                         Reply
@@ -729,17 +740,17 @@ export default function DeckPage() {
                               }
                             }}
                             placeholder="Write a reply..."
-                            className="mb-2"
-                            rows={2}
+                            className="mb-2 min-h-[80px]"
                           />
                           <div className="flex justify-between items-center">
-                            <span className={`text-sm ${replyContent.length > 600 ? 'text-red-500' : 'text-gray-500'}`}>
-                              {replyContent.length}/600 characters
+                            <span className={`text-xs ${replyContent.length > 600 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                              {replyContent.length}/600
                             </span>
                             <div className="space-x-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="h-7 px-2 text-xs"
                                 onClick={() => {
                                   setReplyingTo(null)
                                   setReplyContent('')
@@ -749,6 +760,7 @@ export default function DeckPage() {
                               </Button>
                               <Button
                                 size="sm"
+                                className="h-7 px-2 text-xs"
                                 onClick={() => handleReply(comment.id)}
                                 disabled={!replyContent.trim() || replyContent.length > 600}
                               >
@@ -763,17 +775,17 @@ export default function DeckPage() {
 
                   {/* Replies */}
                   {comment.replies && comment.replies.length > 0 && (
-                    <div className="ml-8 mt-4 space-y-4">
+                    <div className="ml-4 sm:ml-6 mt-3 space-y-3">
                       {comment.replies.map((reply) => (
-                        <div key={reply.id} className="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-medium">{reply.user.username}</p>
-                              <p className={`mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <div key={reply.id} className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm">{reply.user.username}</p>
+                              <p className={`mt-1 text-sm break-words ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                 {reply.content}
                               </p>
                             </div>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
                               {formatDate(reply.createdAt)}
                             </span>
                           </div>
