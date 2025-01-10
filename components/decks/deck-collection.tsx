@@ -131,17 +131,17 @@ export function DeckCollection({
         {filteredDecks.map((deck) => (
           <Link href={`/decks/${deck.id}`} key={deck.id} className="block">
             <Card 
-              className={`p-4 sm:p-6 transition-all cursor-pointer ${
+              className={`p-3 sm:p-6 transition-all cursor-pointer ${
                 isDarkMode 
                   ? 'bg-gray-800 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.3)]' 
                   : 'bg-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.12)]'
               }`}
             >
-              <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex flex-col gap-2 sm:gap-4">
                 {/* Title Row */}
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base sm:text-lg font-bold">{deck.title}</h3>
-                  <span className={`w-2.5 h-2.5 rounded-full ${
+                  <h3 className="text-sm sm:text-lg font-bold line-clamp-1">{deck.title}</h3>
+                  <span className={`w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full flex-shrink-0 ${
                     deck.color === 'RED' ? 'bg-red-500' :
                     deck.color === 'BLUE' ? 'bg-blue-500' :
                     deck.color === 'GREEN' ? 'bg-green-500' :
@@ -152,16 +152,16 @@ export function DeckCollection({
                 </div>
 
                 {/* Author and Dates */}
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium text-sm">{deck.author.username}</span>
-                  <div className="flex flex-col gap-0.5 sm:gap-1 text-xs sm:text-sm text-muted-foreground">
+                <div className="flex flex-col gap-0.5 sm:gap-1">
+                  <span className="font-medium text-xs sm:text-sm">{deck.author.username}</span>
+                  <div className="flex flex-col gap-0.5 sm:gap-1 text-[0.7rem] sm:text-sm text-muted-foreground">
                     <span>Created {new Date(deck.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric'
                     })}</span>
                     {deck.updatedAt > deck.createdAt && (
-                      <span>Last updated {new Date(deck.updatedAt).toLocaleDateString('en-US', {
+                      <span className="hidden sm:block">Last updated {new Date(deck.updatedAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
@@ -171,12 +171,12 @@ export function DeckCollection({
                 </div>
 
                 {/* Stats Row */}
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
-                    <HeartIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500 fill-red-500" /> {deck.likes.length}
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <span className="flex items-center gap-1 text-[0.7rem] sm:text-sm text-muted-foreground">
+                    <HeartIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 fill-red-500" /> {deck.likes.length}
                   </span>
-                  <span className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
-                    <EyeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {deck.views}
+                  <span className="flex items-center gap-1 text-[0.7rem] sm:text-sm text-muted-foreground">
+                    <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" /> {deck.views}
                   </span>
                 </div>
               </div>

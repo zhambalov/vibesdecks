@@ -94,7 +94,7 @@ export function NavBar() {
 
            <form onSubmit={(e) => e.preventDefault()} className={`${
              isSearchOpen 
-               ? 'absolute right-0 top-full mt-2' 
+               ? 'fixed left-0 right-0 top-16 px-4 pb-4 pt-2 border-b backdrop-blur-xl backdrop-saturate-150 z-50 animate-in slide-in-from-top-2 duration-200 ease-out' 
                : 'relative hidden sm:block'
            }`}>
              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
@@ -105,15 +105,15 @@ export function NavBar() {
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
                placeholder="Find decks..."
-               className={`pl-8 pr-3 py-1.5 w-48 sm:w-48 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
+               className={`pl-8 pr-3 py-2 w-full sm:w-48 rounded-lg sm:rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
                  ${isDarkMode ? 
-                   'bg-gray-800/70 border-gray-700 text-white placeholder:text-gray-400' : 
-                   'bg-gray-50/70 border-gray-200 placeholder:text-gray-500'}`}
+                   'bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 sm:bg-gray-800/70' : 
+                   'bg-white border-gray-200 placeholder:text-gray-500 sm:bg-gray-50/70'}`}
              />
            </form>
 
            {(searchQuery && searchResults.length > 0) && (
-             <div className={`absolute right-0 sm:right-auto top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 rounded-lg border backdrop-blur-xl backdrop-saturate-150 ${
+             <div className={`fixed sm:absolute left-0 sm:left-auto right-0 sm:right-auto top-[7.5rem] sm:top-full mt-0 sm:mt-2 mx-4 sm:mx-0 w-auto sm:w-96 rounded-lg border backdrop-blur-xl backdrop-saturate-150 ${
                isDarkMode 
                  ? 'bg-gray-900/60 border-gray-800/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
                  : 'bg-white/60 border-gray-200/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
@@ -202,9 +202,9 @@ export function NavBar() {
      </div>
 
      {isMobileMenuOpen && (
-       <div className={`sm:hidden border-t ${
+       <div className={`fixed sm:hidden inset-0 top-16 z-40 border-t animate-in slide-in-from-right duration-300 ${
          isDarkMode ? 'bg-gray-900/60 border-gray-800/20' : 'bg-white/60 border-gray-200/20'
-       } backdrop-blur-xl backdrop-saturate-150`}>
+       } backdrop-blur-xl backdrop-saturate-150 overflow-y-auto`}>
          <div className="px-4 py-4 space-y-4">
            {username && (
              <Link href="/decks/new" onClick={() => setIsMobileMenuOpen(false)}>

@@ -124,7 +124,11 @@ export function AuthPopovers() {
             login
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80" align="end">
+        <PopoverContent 
+          className="w-[calc(100vw-2rem)] sm:w-80 animate-in zoom-in-95 duration-200" 
+          align="end"
+          sideOffset={8}
+        >
           <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
             <div className="font-medium text-base sm:text-lg pb-2">Login</div>
             {error && (
@@ -145,7 +149,7 @@ export function AuthPopovers() {
                 type="text"
                 value={username}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full p-3 sm:p-2 text-base sm:text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                 required
               />
             </div>
@@ -155,7 +159,7 @@ export function AuthPopovers() {
                 type="password"
                 value={password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full p-3 sm:p-2 text-base sm:text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                 required
               />
             </div>
@@ -192,7 +196,11 @@ export function AuthPopovers() {
         <PopoverTrigger asChild>
           <Button className="rounded-full text-sm sm:text-base">sign up</Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80" align="end">
+        <PopoverContent 
+          className="w-[calc(100vw-2rem)] sm:w-80 animate-in zoom-in-95 duration-200" 
+          align="end"
+          sideOffset={8}
+        >
           <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4">
             <div className="font-medium text-base sm:text-lg pb-2">Create Account</div>
             {error && (
@@ -213,7 +221,7 @@ export function AuthPopovers() {
                 type="text"
                 value={username}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full p-3 sm:p-2 text-base sm:text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                 required
                 minLength={3}
                 maxLength={20}
@@ -227,7 +235,7 @@ export function AuthPopovers() {
                 type="password"
                 value={password}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full p-3 sm:p-2 text-base sm:text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                 required
                 minLength={6}
               />
@@ -238,7 +246,7 @@ export function AuthPopovers() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"
+                className="w-full p-3 sm:p-2 text-base sm:text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700"
                 required
               />
             </div>
