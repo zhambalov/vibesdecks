@@ -53,6 +53,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
   const [isLoading, setIsLoading] = useState(false)
   const [availableCards, setAvailableCards] = useState<CardOption[]>([])
   const [cardSearchQuery, setCardSearchQuery] = useState('')
+  const [showMobileCards, setShowMobileCards] = useState(false)
 
   const fetchDeck = useCallback(async () => {
     try {
@@ -182,10 +183,193 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <div className="flex gap-6">
+      <div className="flex flex-col sm:flex-row gap-6">
         <div className="flex-1">
           <Card className="p-6">
             <h2 className="text-2xl font-bold mb-4">{mode === 'edit' ? 'Edit' : 'Create New'} Deck</h2>
+            
+            {/* Mobile Cards Toggle */}
+            <div className="sm:hidden mb-4">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowMobileCards(!showMobileCards)}
+              >
+                {showMobileCards ? 'Hide' : 'Show'} Cards ({formData.cards.reduce((total, card) => total + card.quantity, 0)} / 52)
+              </Button>
+            </div>
+
+            {/* Mobile Cards Section */}
+            {showMobileCards && (
+              <div className="sm:hidden mb-6">
+                <Card className="p-4 bg-accent/10">
+                  <div className="mb-4">
+                    <Input
+                      type="text"
+                      value={cardSearchQuery}
+                      onChange={(e) => setCardSearchQuery(e.target.value)}
+                      placeholder="Search for cards..."
+                      className="w-full"
+                    />
+                    {cardSearchQuery && availableCards.length > 0 && (
+                      <div className="relative mt-1">
+                        <div className="absolute w-full z-10 bg-background rounded-md border shadow-lg max-h-60 overflow-auto">
+                          {availableCards
+                            .filter(card => 
+                              card.name.toLowerCase().includes(cardSearchQuery.toLowerCase())
+                            )
+                            .map(card => (
+                              <button
+                                key={card.id}
+                                type="button"
+                                onClick={() => {
+                                  const existingCard = formData.cards.find(c => c.cardId === card.id)
+                                  const currentTotal = formData.cards.reduce((total, card) => total + card.quantity, 0)
+
+                                  if (existingCard) {
+                                    if (existingCard.quantity >= 4) {
+                                      toast({
+                                        title: "Maximum reached",
+                                        description: "You can only have 4 copies of a card",
+                                        variant: "destructive"
+                                      })
+                                      return
+                                    }
+                                    if (currentTotal >= 52) {
+                                      toast({
+                                        title: "Deck is full",
+                                        description: "Maximum deck size is 52 cards",
+                                        variant: "destructive"
+                                      })
+                                      return
+                                    }
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      cards: prev.cards.map(c => 
+                                        c.cardId === card.id 
+                                          ? { ...c, quantity: c.quantity + 1 }
+                                          : c
+                                      )
+                                    }))
+                                  } else {
+                                    if (currentTotal >= 52) {
+                                      toast({
+                                        title: "Deck is full",
+                                        description: "Maximum deck size is 52 cards",
+                                        variant: "destructive"
+                                      })
+                                      return
+                                    }
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      cards: [...prev.cards, { cardId: card.id, quantity: 1 }]
+                                    }))
+                                  }
+                                  setCardSearchQuery('')
+                                }}
+                                className="w-full px-3 py-2 text-left hover:bg-accent/50 flex items-center gap-2"
+                              >
+                                <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                                  card.color === 'RED' ? 'bg-red-500' :
+                                  card.color === 'BLUE' ? 'bg-blue-500' :
+                                  card.color === 'GREEN' ? 'bg-green-500' :
+                                  card.color === 'YELLOW' ? 'bg-yellow-500' :
+                                  card.color === 'PURPLE' ? 'bg-purple-500' :
+                                  card.color === 'GREY' ? 'bg-gray-500' :
+                                  card.color === 'ROD' ? 'bg-amber-700' :
+                                  card.color === 'RELIC' ? 'bg-black' :
+                                  'bg-gray-500'
+                                }`} />
+                                <span>{card.name}</span>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                    {formData.cards.map((card, index) => {
+                      const cardDetails = availableCards.find(c => c.id === card.cardId)
+                      return (
+                        <div 
+                          key={card.cardId}
+                          className="p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                                cardDetails?.color === 'RED' ? 'bg-red-500' :
+                                cardDetails?.color === 'BLUE' ? 'bg-blue-500' :
+                                cardDetails?.color === 'GREEN' ? 'bg-green-500' :
+                                cardDetails?.color === 'YELLOW' ? 'bg-yellow-500' :
+                                cardDetails?.color === 'PURPLE' ? 'bg-purple-500' :
+                                cardDetails?.color === 'GREY' ? 'bg-gray-500' :
+                                cardDetails?.color === 'ROD' ? 'bg-amber-700' :
+                                cardDetails?.color === 'RELIC' ? 'bg-black' :
+                                'bg-gray-500'
+                              }`} />
+                              <span className="font-medium text-sm truncate">{cardDetails?.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newCards = [...formData.cards]
+                                  if (newCards[index].quantity > 1) {
+                                    newCards[index].quantity--
+                                  } else {
+                                    newCards.splice(index, 1)
+                                  }
+                                  setFormData({...formData, cards: newCards})
+                                }}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="w-6 text-center text-sm">{card.quantity}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const newCards = [...formData.cards]
+                                  const currentTotal = newCards.reduce((total, card) => total + card.quantity, 0)
+                                  
+                                  if (newCards[index].quantity >= 4) {
+                                    toast({
+                                      title: "Maximum reached",
+                                      description: "You can only have 4 copies of a card",
+                                      variant: "destructive"
+                                    })
+                                    return
+                                  }
+                                  if (currentTotal >= 52) {
+                                    toast({
+                                      title: "Deck is full",
+                                      description: "Maximum deck size is 52 cards",
+                                      variant: "destructive"
+                                    })
+                                    return
+                                  }
+                                  
+                                  newCards[index].quantity++
+                                  setFormData({...formData, cards: newCards})
+                                }}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </Card>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div>
@@ -335,7 +519,8 @@ Alternative Cards:
           </Card>
         </div>
 
-        <div className="w-80">
+        {/* Desktop Cards Section */}
+        <div className="hidden sm:block w-80">
           <div className="sticky top-4">
             <Card className="p-6">
               <h2 className="text-lg font-bold mb-4 flex justify-between items-center">

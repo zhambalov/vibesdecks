@@ -87,16 +87,19 @@ export function NavBar() {
              variant="ghost"
              size="icon"
              className="sm:hidden rounded-full w-10 h-10"
-             onClick={() => setIsSearchOpen(!isSearchOpen)}
+             onClick={() => {
+               if (isSearchOpen) {
+                 setIsSearchOpen(false)
+               } else {
+                 setIsMobileMenuOpen(false)
+                 setIsSearchOpen(true)
+               }
+             }}
            >
              {isSearchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
            </Button>
 
-           <form onSubmit={(e) => e.preventDefault()} className={`${
-             isSearchOpen 
-               ? 'fixed left-0 right-0 top-16 px-4 pb-4 pt-2 border-b backdrop-blur-xl backdrop-saturate-150 z-50 animate-in slide-in-from-top-2 duration-200 ease-out' 
-               : 'relative hidden sm:block'
-           }`}>
+           <form onSubmit={(e) => e.preventDefault()} className="relative hidden sm:block">
              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
                isDarkMode ? 'text-gray-400' : 'text-gray-500'
              }`} />
@@ -105,34 +108,41 @@ export function NavBar() {
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
                placeholder="Find decks..."
-               className={`pl-8 pr-3 py-2 w-full sm:w-48 rounded-lg sm:rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
+               className={`pl-8 pr-3 py-2 w-48 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
                  ${isDarkMode ? 
-                   'bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 sm:bg-gray-800/70' : 
-                   'bg-white border-gray-200 placeholder:text-gray-500 sm:bg-gray-50/70'}`}
+                   'bg-gray-800/70 border-gray-700 text-white placeholder:text-gray-400' : 
+                   'bg-gray-50/70 border-gray-200 placeholder:text-gray-500'}`}
              />
            </form>
 
-           {(searchQuery && searchResults.length > 0) && (
-             <div className={`fixed sm:absolute left-0 sm:left-auto right-0 sm:right-auto top-[7.5rem] sm:top-full mt-0 sm:mt-2 mx-4 sm:mx-0 w-auto sm:w-96 rounded-lg border backdrop-blur-xl backdrop-saturate-150 ${
+           {(searchResults.length > 0 && searchQuery) && (
+             <div className={`absolute ${
+               isSearchOpen 
+                 ? 'left-0 right-0 px-4 mx-auto max-w-[240px]' // Mobile view
+                 : 'sm:right-0 w-72' // Desktop view
+             } mt-2 rounded-lg border backdrop-blur-xl backdrop-saturate-150 z-50 ${
                isDarkMode 
                  ? 'bg-gray-900/60 border-gray-800/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
                  : 'bg-white/60 border-gray-200/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
              }`}>
-               <div className="p-2 max-h-96 overflow-y-auto">
+               <div className="p-2 max-h-[60vh] sm:max-h-96 overflow-y-auto">
                  {searchResults.map((deck) => (
                    <Link 
                      key={deck.id} 
                      href={`/decks/${deck.id}`}
                      className="block"
-                     onClick={() => setSearchQuery('')}
+                     onClick={() => {
+                       setSearchQuery('')
+                       setIsSearchOpen(false)
+                     }}
                    >
-                     <Card className={`p-3 mb-2 transition-all duration-200 ${
+                     <Card className={`p-2.5 mb-2 transition-all duration-200 ${
                        isDarkMode 
                          ? 'bg-gray-800/40 hover:bg-gray-800/60' 
                          : 'bg-white/40 hover:bg-white/60'
                      }`}>
                        <div className="flex items-center justify-between">
-                         <h3 className="font-medium">{deck.title}</h3>
+                         <h3 className="font-medium text-sm">{deck.title}</h3>
                          <span className={`w-2 h-2 rounded-full ${
                            deck.color === 'RED' ? 'bg-red-500' :
                            deck.color === 'BLUE' ? 'bg-blue-500' :
@@ -193,7 +203,14 @@ export function NavBar() {
          <Button
            variant="ghost"
            size="icon"
-           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+           onClick={() => {
+             if (isMobileMenuOpen) {
+               setIsMobileMenuOpen(false)
+             } else {
+               setIsSearchOpen(false)
+               setIsMobileMenuOpen(true)
+             }
+           }}
            className="sm:hidden rounded-full w-10 h-10"
          >
            {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -202,12 +219,12 @@ export function NavBar() {
      </div>
 
      {isMobileMenuOpen && (
-       <div className={`fixed sm:hidden inset-0 top-16 z-40 border-t animate-in slide-in-from-right duration-300 ${
+       <div className={`sm:hidden border-t ${
          isDarkMode ? 'bg-gray-900/60 border-gray-800/20' : 'bg-white/60 border-gray-200/20'
-       } backdrop-blur-xl backdrop-saturate-150 overflow-y-auto`}>
-         <div className="px-4 py-4 space-y-4">
+       } backdrop-blur-xl backdrop-saturate-150`}>
+         <div className="px-4 py-2 flex items-center gap-3">
            {username && (
-             <Link href="/decks/new" onClick={() => setIsMobileMenuOpen(false)}>
+             <Link href="/decks/new" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
                <Button 
                  variant="outline" 
                  className={`w-full transition-all duration-200 px-4 py-2 text-sm ${
@@ -221,28 +238,41 @@ export function NavBar() {
              </Link>
            )}
            
-           <div className="flex items-center justify-between">
-             <Button 
-               variant="ghost" 
-               size="icon"
-               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-               className={`rounded-full w-10 h-10 flex items-center justify-center ${
-                 isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 
-                             'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-               }`}
-             >
-               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-             </Button>
-           </div>
+           <Button 
+             variant="ghost" 
+             size="icon"
+             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+             className={`rounded-full w-10 h-10 flex items-center justify-center ${
+               isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 
+                           'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+             }`}
+           >
+             {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+           </Button>
 
-           <div className="pt-2">
-             {username ? (
-               <UserProfile username={username} onLogout={logout} />
-             ) : (
-               <AuthPopovers />
-             )}
-           </div>
+           {username ? (
+             <UserProfile username={username} onLogout={logout} />
+           ) : (
+             <AuthPopovers />
+           )}
          </div>
+       </div>
+     )}
+
+     {isSearchOpen && (
+       <div className="sm:hidden border-t border-gray-800/20 bg-gray-900">
+         <form onSubmit={(e) => e.preventDefault()} className="px-4 py-1.5">
+           <div className="relative max-w-[240px] mx-auto">
+             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+             <input
+               type="text"
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               placeholder="Find decks..."
+               className="w-full bg-gray-800 text-white placeholder:text-gray-400 pl-8 pr-2.5 py-1.5 rounded-lg border-0 focus:outline-none text-sm"
+             />
+           </div>
+         </form>
        </div>
      )}
    </header>

@@ -125,7 +125,7 @@ export function AuthPopovers() {
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[calc(100vw-2rem)] sm:w-80 animate-in zoom-in-95 duration-200" 
+          className="w-[calc(100vw-2rem)] sm:w-80 animate-in zoom-in-95 duration-200 z-[200]" 
           align="end"
           sideOffset={8}
         >
@@ -197,7 +197,7 @@ export function AuthPopovers() {
           <Button className="rounded-full text-sm sm:text-base">sign up</Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[calc(100vw-2rem)] sm:w-80 animate-in zoom-in-95 duration-200" 
+          className="w-[calc(100vw-2rem)] sm:w-80 animate-in zoom-in-95 duration-200 z-[200]" 
           align="end"
           sideOffset={8}
         >

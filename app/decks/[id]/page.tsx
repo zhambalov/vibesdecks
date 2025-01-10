@@ -89,6 +89,7 @@ export default function DeckPage() {
   const isDarkMode = theme === 'dark'
   const [availableCards, setAvailableCards] = useState<CardType[]>([])
   const [cardSearchQuery, setCardSearchQuery] = useState('')
+  const [showMobileCards, setShowMobileCards] = useState(false)
 
   const copyDeckToClipboard = () => {
     if (!deck) return;
@@ -499,14 +500,14 @@ export default function DeckPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="flex gap-6">
+      <div className="flex flex-col sm:flex-row gap-6">
         <div className="flex-1">
           <Card className={`p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
             {/* Header Section */}
             <div className="flex flex-col gap-4">
               {/* Title Row */}
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{deck.title}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold">{deck.title}</h1>
                 <div className="flex items-center gap-2">
                   {username === deck.author.username && (
                     <Button
@@ -570,15 +571,67 @@ export default function DeckPage() {
                   </span>
                 </div>
 
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={copyDeckToClipboard}
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy Deck
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="sm:hidden"
+                    onClick={() => setShowMobileCards(!showMobileCards)}
+                  >
+                    {showMobileCards ? 'Hide Cards' : 'View Cards'}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={copyDeckToClipboard}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy Deck
+                  </Button>
+                </div>
               </div>
+
+              {/* Mobile Cards List */}
+              {showMobileCards && (
+                <div className="sm:hidden mt-4">
+                  <Card className={`p-4 ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-sm font-bold">Cards</h2>
+                      <span className="text-xs text-muted-foreground">
+                        {deck.cards.reduce((total, card) => total + card.quantity, 0)} total
+                      </span>
+                    </div>
+                    <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                      {deck.cards.map(({ card, quantity }) => (
+                        <div 
+                          key={card.id}
+                          className="p-2 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                                card.color === 'RED' ? 'bg-red-500' :
+                                card.color === 'BLUE' ? 'bg-blue-500' :
+                                card.color === 'GREEN' ? 'bg-green-500' :
+                                card.color === 'YELLOW' ? 'bg-yellow-500' :
+                                card.color === 'PURPLE' ? 'bg-purple-500' :
+                                card.color === 'GREY' ? 'bg-gray-500' :
+                                card.color === 'ROD' ? 'bg-amber-700' :
+                                card.color === 'RELIC' ? 'bg-black' :
+                                'bg-gray-500'
+                              }`} />
+                              <span className="font-medium text-sm truncate">{card.name}</span>
+                            </div>
+                            <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-background">
+                              x{quantity}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -733,7 +786,8 @@ export default function DeckPage() {
           </Card>
         </div>
 
-        <div className="w-80">
+        {/* Desktop Cards Section */}
+        <div className="hidden sm:block w-80">
           <div className="sticky top-4">
             <Card className={`p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center justify-between mb-4">
@@ -743,143 +797,33 @@ export default function DeckPage() {
                 </span>
               </div>
 
-              {isEditMode && (
-                <div className="mb-4">
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      value={cardSearchQuery}
-                      onChange={(e) => setCardSearchQuery(e.target.value)}
-                      placeholder="Search for cards..."
-                      className="w-full mb-2"
-                    />
-                    {cardSearchQuery && filteredCards.length > 0 && (
-                      <div className="absolute top-full mt-1 w-full z-10 bg-background rounded-md border shadow-lg max-h-60 overflow-auto">
-                        {filteredCards.map(card => (
-                          <button
-                            key={card.id}
-                            type="button"
-                            onClick={() => {
-                              const existingCard = editedCards.find(ec => ec.cardId === card.id)
-                              if (existingCard) {
-                                setEditedCards(editedCards.map(ec => 
-                                  ec.cardId === card.id 
-                                    ? { ...ec, quantity: ec.quantity + 1 }
-                                    : ec
-                                ))
-                              } else {
-                                setEditedCards([...editedCards, { cardId: card.id, quantity: 1 }])
-                              }
-                              setCardSearchQuery('')
-                            }}
-                            className="w-full px-3 py-2 text-left hover:bg-accent flex items-center gap-2"
-                          >
-                            <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                              card.color === 'RED' ? 'bg-red-500' :
-                              card.color === 'BLUE' ? 'bg-blue-500' :
-                              card.color === 'GREEN' ? 'bg-green-500' :
-                              card.color === 'YELLOW' ? 'bg-yellow-500' :
-                              card.color === 'PURPLE' ? 'bg-purple-500' :
-                              card.color === 'GREY' ? 'bg-gray-500' :
-                              card.color === 'ROD' ? 'bg-amber-700' :
-                              card.color === 'RELIC' ? 'bg-black' :
-                              'bg-gray-500'
-                            }`} />
-                            <span className="truncate">{card.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
               <div className="space-y-2 max-h-[calc(100vh-16rem)] overflow-y-auto">
-                {isEditMode ? (
-                  editedCards.map((editedCard) => {
-                    const card = availableCards.find(c => c.id === editedCard.cardId)
-                    if (!card) return null
-                    return (
-                      <div 
-                        key={editedCard.cardId}
-                        className="p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                              card.color === 'RED' ? 'bg-red-500' :
-                              card.color === 'BLUE' ? 'bg-blue-500' :
-                              card.color === 'GREEN' ? 'bg-green-500' :
-                              card.color === 'YELLOW' ? 'bg-yellow-500' :
-                              card.color === 'PURPLE' ? 'bg-purple-500' :
-                              card.color === 'GREY' ? 'bg-gray-500' :
-                              card.color === 'ROD' ? 'bg-amber-700' :
-                              card.color === 'RELIC' ? 'bg-black' :
-                              'bg-gray-500'
-                            }`} />
-                            <span className="font-medium text-sm truncate">{card.name}</span>
-                          </div>
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditedCards(editedCards.map(ec => 
-                                  ec.cardId === editedCard.cardId && ec.quantity > 1
-                                    ? { ...ec, quantity: ec.quantity - 1 }
-                                    : ec
-                                ).filter(ec => ec.quantity > 0))
-                              }}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="w-6 text-center">{editedCard.quantity}</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditedCards(editedCards.map(ec => 
-                                  ec.cardId === editedCard.cardId
-                                    ? { ...ec, quantity: ec.quantity + 1 }
-                                    : ec
-                                ))
-                              }}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
+                {deck.cards.map(({ card, quantity }) => (
+                  <div 
+                    key={card.id}
+                    className="p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                          card.color === 'RED' ? 'bg-red-500' :
+                          card.color === 'BLUE' ? 'bg-blue-500' :
+                          card.color === 'GREEN' ? 'bg-green-500' :
+                          card.color === 'YELLOW' ? 'bg-yellow-500' :
+                          card.color === 'PURPLE' ? 'bg-purple-500' :
+                          card.color === 'GREY' ? 'bg-gray-500' :
+                          card.color === 'ROD' ? 'bg-amber-700' :
+                          card.color === 'RELIC' ? 'bg-black' :
+                          'bg-gray-500'
+                        }`} />
+                        <span className="font-medium text-sm truncate">{card.name}</span>
                       </div>
-                    )
-                  })
-                ) : (
-                  deck.cards.map(({ card, quantity }) => (
-                    <div 
-                      key={card.id}
-                      className="p-3 rounded-lg bg-accent/50 hover:bg-accent/70 transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                            card.color === 'RED' ? 'bg-red-500' :
-                            card.color === 'BLUE' ? 'bg-blue-500' :
-                            card.color === 'GREEN' ? 'bg-green-500' :
-                            card.color === 'YELLOW' ? 'bg-yellow-500' :
-                            card.color === 'PURPLE' ? 'bg-purple-500' :
-                            card.color === 'GREY' ? 'bg-gray-500' :
-                            card.color === 'ROD' ? 'bg-amber-700' :
-                            card.color === 'RELIC' ? 'bg-black' :
-                            'bg-gray-500'
-                          }`} />
-                          <span className="font-medium text-sm truncate">{card.name}</span>
-                        </div>
-                        <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-background">
-                          x{quantity}
-                        </span>
-                      </div>
+                      <span className="flex-shrink-0 text-xs px-2 py-1 rounded-full bg-background">
+                        x{quantity}
+                      </span>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
