@@ -89,16 +89,16 @@ export function DeckCollection({
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="flex justify-start items-center mb-6">
-        <div className={`inline-flex rounded-full p-1 ${
+    <div className="max-w-5xl mx-auto px-4 sm:px-4 py-4 sm:py-6">
+      <div className="flex justify-start items-center mb-4 sm:mb-6">
+        <div className={`w-full sm:w-auto inline-flex rounded-full p-1 ${
           isDarkMode 
             ? 'bg-white/[0.03] border border-white/[0.08]' 
             : 'bg-gray-100/50 border border-gray-200/50'
         }`}>
           <button
             onClick={() => setSortBy('recent')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
               sortBy === 'recent'
                 ? isDarkMode
                   ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]'
@@ -112,7 +112,7 @@ export function DeckCollection({
           </button>
           <button
             onClick={() => setSortBy('popular')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
               sortBy === 'popular'
                 ? isDarkMode
                   ? 'bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]'
@@ -127,20 +127,20 @@ export function DeckCollection({
         </div>
       </div>
 
-      <div className="space-y-6 mb-24">
+      <div className="space-y-4 sm:space-y-6 mb-16 sm:mb-24">
         {filteredDecks.map((deck) => (
           <Link href={`/decks/${deck.id}`} key={deck.id} className="block">
             <Card 
-              className={`p-6 transition-all cursor-pointer ${
+              className={`p-4 sm:p-6 transition-all cursor-pointer ${
                 isDarkMode 
                   ? 'bg-gray-800 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.3)]' 
                   : 'bg-white shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.12)]'
               }`}
             >
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {/* Title Row */}
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold">{deck.title}</h3>
+                  <h3 className="text-base sm:text-lg font-bold">{deck.title}</h3>
                   <span className={`w-2.5 h-2.5 rounded-full ${
                     deck.color === 'RED' ? 'bg-red-500' :
                     deck.color === 'BLUE' ? 'bg-blue-500' :
@@ -154,7 +154,7 @@ export function DeckCollection({
                 {/* Author and Dates */}
                 <div className="flex flex-col gap-1">
                   <span className="font-medium text-sm">{deck.author.username}</span>
-                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                  <div className="flex flex-col gap-0.5 sm:gap-1 text-xs sm:text-sm text-muted-foreground">
                     <span>Created {new Date(deck.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -172,11 +172,11 @@ export function DeckCollection({
 
                 {/* Stats Row */}
                 <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <HeartIcon className="w-4 h-4 text-red-500 fill-red-500" /> {deck.likes.length}
+                  <span className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                    <HeartIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500 fill-red-500" /> {deck.likes.length}
                   </span>
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <EyeIcon className="w-4 h-4" /> {deck.views}
+                  <span className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                    <EyeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {deck.views}
                   </span>
                 </div>
               </div>

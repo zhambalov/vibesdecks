@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, Search } from 'lucide-react'
+import { Moon, Sun, Search, Menu, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { AuthPopovers } from '@/components/authpopovers'
 import { UserProfile } from '@/components/user-profile'
@@ -22,6 +22,8 @@ interface DeckWithAuthor extends Deck {
 
 export function NavBar() {
  const [mounted, setMounted] = useState(false)
+ const [isSearchOpen, setIsSearchOpen] = useState(false)
+ const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
  const { theme, setTheme } = useTheme()
  const { username, logout } = useAuth()
  const [searchQuery, setSearchQuery] = useState('')
@@ -62,21 +64,39 @@ export function NavBar() {
        ? 'bg-gray-900/60 border-gray-800/20' 
        : 'bg-white/60 border-gray-200/20'
    } backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-opacity-50`}>
-     <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-       <div className="flex items-center gap-4">
+     <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+       <div className="flex items-center gap-2 sm:gap-4">
          <Link href="/">
-           <h1 className="text-2xl font-bold tracking-tight">vibesdecks</h1>
+           <div className="flex flex-col sm:block">
+             <h1 className="text-xl sm:text-2xl font-bold tracking-tight">vibesdecks</h1>
+             <span className={`sm:hidden text-xs ${
+               isDarkMode ? 'text-blue-300/70' : 'text-blue-600/70'
+             }`}>by pudgy frens 🧊</span>
+           </div>
          </Link>
-         <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+         <span className={`hidden sm:inline-block text-sm font-medium px-3 py-1 rounded-full ${
            isDarkMode ? 'bg-blue-900/30 text-blue-200' : 'bg-blue-100 text-blue-700'
          }`}>
            by pudgy frens 🧊
          </span>
        </div>
        
-       <div className="flex items-center h-full gap-4">
+       <div className="flex items-center h-full gap-2 sm:gap-4">
          <div className="relative">
-           <form onSubmit={(e) => e.preventDefault()} className="relative">
+           <Button
+             variant="ghost"
+             size="icon"
+             className="sm:hidden rounded-full w-10 h-10"
+             onClick={() => setIsSearchOpen(!isSearchOpen)}
+           >
+             {isSearchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+           </Button>
+
+           <form onSubmit={(e) => e.preventDefault()} className={`${
+             isSearchOpen 
+               ? 'absolute right-0 top-full mt-2' 
+               : 'relative hidden sm:block'
+           }`}>
              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
                isDarkMode ? 'text-gray-400' : 'text-gray-500'
              }`} />
@@ -85,7 +105,7 @@ export function NavBar() {
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
                placeholder="Find decks..."
-               className={`pl-8 pr-3 py-1.5 w-48 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
+               className={`pl-8 pr-3 py-1.5 w-48 sm:w-48 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm
                  ${isDarkMode ? 
                    'bg-gray-800/70 border-gray-700 text-white placeholder:text-gray-400' : 
                    'bg-gray-50/70 border-gray-200 placeholder:text-gray-500'}`}
@@ -93,7 +113,7 @@ export function NavBar() {
            </form>
 
            {(searchQuery && searchResults.length > 0) && (
-             <div className={`absolute top-full mt-2 w-96 rounded-lg border backdrop-blur-xl backdrop-saturate-150 ${
+             <div className={`absolute right-0 sm:right-auto top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 rounded-lg border backdrop-blur-xl backdrop-saturate-150 ${
                isDarkMode 
                  ? 'bg-gray-900/60 border-gray-800/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' 
                  : 'bg-white/60 border-gray-200/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)]'
@@ -133,42 +153,98 @@ export function NavBar() {
            )}
          </div>
 
-         {username && (
-           <Link href="/decks/new">
-             <Button 
-               variant="outline" 
-               className={`transition-all duration-200 px-4 py-2 text-sm ${
-                 isDarkMode 
-                   ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.1] text-gray-300 hover:text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' 
-                   : 'hover:bg-gray-50'
-               }`}
-             >
-               Create Deck
-             </Button>
-           </Link>
-         )}
-         
-         <Button 
-           variant="ghost" 
-           size="icon"
-           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-           className={`rounded-full w-10 h-10 flex items-center justify-center ${
-             isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 
-                         'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-           }`}
-         >
-           {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-         </Button>
-         
-         <div className="flex items-center h-full">
-           {username ? (
-             <UserProfile username={username} onLogout={logout} />
-           ) : (
-             <AuthPopovers />
+         <div className="hidden sm:flex items-center gap-4">
+           {username && (
+             <Link href="/decks/new">
+               <Button 
+                 variant="outline" 
+                 className={`transition-all duration-200 px-4 py-2 text-sm ${
+                   isDarkMode 
+                     ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.1] text-gray-300 hover:text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' 
+                     : 'hover:bg-gray-50'
+                 }`}
+               >
+                 Create Deck
+               </Button>
+             </Link>
            )}
+           
+           <Button 
+             variant="ghost" 
+             size="icon"
+             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+             className={`rounded-full w-10 h-10 flex items-center justify-center ${
+               isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 
+                           'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+             }`}
+           >
+             {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+           </Button>
+           
+           <div className="flex items-center h-full">
+             {username ? (
+               <UserProfile username={username} onLogout={logout} />
+             ) : (
+               <AuthPopovers />
+             )}
+           </div>
          </div>
+
+         <Button
+           variant="ghost"
+           size="icon"
+           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+           className="sm:hidden rounded-full w-10 h-10"
+         >
+           {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+         </Button>
        </div>
      </div>
+
+     {isMobileMenuOpen && (
+       <div className={`sm:hidden border-t ${
+         isDarkMode ? 'bg-gray-900/60 border-gray-800/20' : 'bg-white/60 border-gray-200/20'
+       } backdrop-blur-xl backdrop-saturate-150`}>
+         <div className="px-4 py-4 space-y-4">
+           {username && (
+             <Link href="/decks/new" onClick={() => setIsMobileMenuOpen(false)}>
+               <Button 
+                 variant="outline" 
+                 className={`w-full transition-all duration-200 px-4 py-2 text-sm ${
+                   isDarkMode 
+                     ? 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.1] text-gray-300 hover:text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]' 
+                     : 'hover:bg-gray-50'
+                 }`}
+               >
+                 Create Deck
+               </Button>
+             </Link>
+           )}
+           
+           <div className="flex items-center justify-between">
+             <Button 
+               variant="ghost" 
+               size="icon"
+               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+               className={`rounded-full w-10 h-10 flex items-center justify-center ${
+                 isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 
+                             'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+               }`}
+             >
+               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+             </Button>
+           </div>
+
+           <div className="pt-2">
+             {username ? (
+               <UserProfile username={username} onLogout={logout} />
+             ) : (
+               <AuthPopovers />
+             )}
+           </div>
+         </div>
+       </div>
+     )}
    </header>
  )
 }

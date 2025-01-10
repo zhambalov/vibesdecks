@@ -120,13 +120,13 @@ export function AuthPopovers() {
         if (!open) resetForm()
       }}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" className="rounded-full">
+          <Button variant="ghost" className="rounded-full text-sm sm:text-base">
             login
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80" align="end">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="font-medium text-lg pb-2">Login</div>
+        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80" align="end">
+          <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+            <div className="font-medium text-base sm:text-lg pb-2">Login</div>
             {error && (
               <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-900/10 p-2 rounded">
                 <AlertCircle className="h-4 w-4" />
@@ -190,11 +190,11 @@ export function AuthPopovers() {
         if (!open) resetForm()
       }}>
         <PopoverTrigger asChild>
-          <Button className="rounded-full">sign up</Button>
+          <Button className="rounded-full text-sm sm:text-base">sign up</Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80" align="end">
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div className="font-medium text-lg pb-2">Create Account</div>
+        <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80" align="end">
+          <form onSubmit={handleSignup} className="space-y-3 sm:space-y-4">
+            <div className="font-medium text-base sm:text-lg pb-2">Create Account</div>
             {error && (
               <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-900/10 p-2 rounded">
                 <AlertCircle className="h-4 w-4" />

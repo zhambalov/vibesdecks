@@ -236,7 +236,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder={`Example:
-It&apos;s not an easy deck to play, but once you learn the combos, it becomes much more manageable.
+Its not an easy deck to play, but once you learn the combos, it becomes much more manageable.
 
 The first question we always want to answer is about the mulligan. In this deck, the most crucial thing to know is that the mulligan is 70% of your path to victory.
 
