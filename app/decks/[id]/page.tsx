@@ -11,7 +11,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from "@/hooks/use-toast"
 import type { Deck, Card as CardType, DeckCard, Like, Comment } from '@prisma/client'
-import { Edit, Eye, Heart, Copy, Plus, Minus } from 'lucide-react'
+import { Edit, Eye, Heart, Copy, Plus, Minus, Download } from 'lucide-react'
 
 interface DeckWithDetails extends Omit<Deck, 'description'> {
   author: {
@@ -90,6 +90,45 @@ export default function DeckPage() {
   const [availableCards, setAvailableCards] = useState<CardType[]>([])
   const [cardSearchQuery, setCardSearchQuery] = useState('')
   const [showMobileCards, setShowMobileCards] = useState(false)
+
+  const exportDeck = async () => {
+    if (!deck) return;
+    
+    try {
+      const response = await fetch(`/api/decks/${id}/export`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username })
+      });
+      
+      if (!response.ok) throw new Error('Failed to export deck');
+      
+      const data = await response.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${deck.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Deck exported",
+        description: "Your deck has been exported successfully"
+      });
+    } catch (error) {
+      console.error('Error exporting deck:', error);
+      toast({
+        title: "Error",
+        description: "Failed to export deck",
+        variant: "destructive"
+      });
+    }
+  };
 
   const copyDeckToClipboard = () => {
     if (!deck) return;

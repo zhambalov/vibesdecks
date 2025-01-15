@@ -132,7 +132,12 @@ export async function PUT(
     const updatedDeck = await prisma.$transaction(async (tx) => {
       await tx.deck.update({
         where: { id },
-        data: { title, description, color }
+        data: { 
+          title, 
+          description, 
+          color,
+          updatedAt: new Date() 
+        }
       })
 
       if (cards) {

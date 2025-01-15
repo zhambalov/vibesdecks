@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
-import { Minus, Plus } from "lucide-react"
+import { Minus, Plus, Upload } from "lucide-react"
 import { useTheme } from 'next-themes'
 
 interface CardOption {
@@ -47,6 +47,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
   const router = useRouter()
   const { theme } = useTheme()
   const isDarkMode = theme === 'dark'
+  const [isMounted, setIsMounted] = useState(false)
   const [formData, setFormData] = useState<DeckFormData>({
     title: '',
     description: '',
@@ -57,6 +58,10 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
   const [availableCards, setAvailableCards] = useState<CardOption[]>([])
   const [cardSearchQuery, setCardSearchQuery] = useState('')
   const [showMobileCards, setShowMobileCards] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const fetchDeck = useCallback(async () => {
     try {
@@ -184,6 +189,175 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
     }
   }
 
+  const handleImport = async () => {
+    try {
+      if (typeof window === 'undefined') {
+        throw new Error('Clipboard access is only available in the browser');
+      }
+
+      if (availableCards.length === 0) {
+        toast({
+          title: "Error",
+          description: "Please wait for cards to load before importing",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      let text: string;
+      try {
+        text = await navigator.clipboard.readText();
+        console.log('Clipboard content:', text);
+      } catch (clipboardError) {
+        console.error('Clipboard access error:', clipboardError);
+        toast({
+          title: "Error",
+          description: "Failed to access clipboard. Please make sure you've copied the deck and granted clipboard permissions.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+        console.log('Parsed deck data:', data);
+      } catch (parseError) {
+        console.error('Parse error:', parseError);
+        toast({
+          title: "Error",
+          description: "Invalid deck format. Please make sure you've copied a valid deck from the game.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!data.deckName || !data.counts) {
+        throw new Error('Invalid deck format');
+      }
+
+      console.log('Available cards:', availableCards);
+
+      // Find cards by name and create the deck structure
+      const cardMapping = new Map<string, CardOption>();
+      
+      // Add all variations of each card name to the mapping
+      for (const card of availableCards) {
+        const variations = [
+          card.name,  // Original name
+          card.name.replace(/[\s']/g, ''),  // Remove spaces and apostrophes
+          card.name.replace(/[\s'`,]/g, ''), // Remove spaces, apostrophes, backticks, and commas
+          card.name.replace(/[^a-zA-Z0-9]/g, '') // Remove all non-alphanumeric characters
+        ];
+        
+        for (const variation of variations) {
+          cardMapping.set(variation, card);
+        }
+      }
+
+      console.log('Card mapping keys:', Array.from(cardMapping.keys()));
+
+      const importedCards: DeckCard[] = [];
+      let notFoundCards: string[] = [];
+
+      // First pass: collect all cards
+      for (const [cardName, quantity] of Object.entries(data.counts)) {
+        console.log('Processing card:', cardName);
+        // Try different variations of the imported card name
+        const variations = [
+          cardName,  // Original name
+          cardName.replace(/[\s']/g, ''),  // Remove spaces and apostrophes
+          cardName.replace(/[\s'`,]/g, ''), // Remove spaces, apostrophes, backticks, and commas
+          cardName.replace(/[^a-zA-Z0-9]/g, '') // Remove all non-alphanumeric characters
+        ];
+        
+        let found = false;
+        for (const variation of variations) {
+          console.log('Trying variation:', variation);
+          const card = cardMapping.get(variation);
+          if (card) {
+            console.log('Found card:', card.name);
+            importedCards.push({
+              cardId: card.id,
+              quantity: quantity as number
+            });
+            found = true;
+            break;
+          }
+        }
+        
+        if (!found) {
+          console.log('Card not found:', cardName);
+          notFoundCards.push(cardName);
+        }
+      }
+
+      if (importedCards.length === 0) {
+        throw new Error('No valid cards found in the imported deck');
+      }
+
+      // Detect deck color based on most common card color
+      const colorCounts = new Map<DeckColor, number>();
+      for (const importedCard of importedCards) {
+        const card = availableCards.find(c => c.id === importedCard.cardId);
+        if (card) {
+          const count = colorCounts.get(card.color as DeckColor) || 0;
+          colorCounts.set(card.color as DeckColor, count + importedCard.quantity);
+        }
+      }
+
+      let detectedColor: DeckColor = 'MIXED';
+      let maxCount = 0;
+      for (const [color, count] of colorCounts.entries()) {
+        console.log(`Color ${color}: ${count} cards`);
+        if (count > maxCount) {
+          maxCount = count;
+          detectedColor = color;
+        }
+      }
+
+      console.log('Detected color:', detectedColor);
+      console.log('Imported cards:', importedCards);
+      console.log('Setting form data:', {
+        title: data.deckName,
+        color: detectedColor,
+        cards: importedCards
+      });
+
+      setFormData(prev => {
+        console.log('Previous form data:', prev);
+        const newData = {
+          ...prev,
+          title: data.deckName,
+          color: detectedColor,
+          cards: importedCards
+        };
+        console.log('New form data:', newData);
+        return newData;
+      });
+
+      if (notFoundCards.length > 0) {
+        toast({
+          title: "Some cards not found",
+          description: `The following cards were not found: ${notFoundCards.join(', ')}`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Deck imported",
+          description: "Deck has been imported successfully"
+        });
+      }
+    } catch (error) {
+      console.error('Error importing deck:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to import deck. Make sure you've copied a valid deck from the game.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="flex flex-col sm:flex-row gap-6">
@@ -213,7 +387,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                         value={cardSearchQuery}
                         onChange={(e) => setCardSearchQuery(e.target.value)}
                         placeholder="Search for cards..."
-                        className={`w-full ${isDarkMode ? 'bg-gray-800 text-white placeholder:text-gray-400' : 'bg-white text-gray-900 placeholder:text-gray-500'}`}
+                        className="w-full"
                       />
                       {cardSearchQuery && availableCards.length > 0 && (
                         <div className={`absolute left-0 right-0 mt-1 z-10 rounded-md border shadow-lg max-h-60 overflow-y-auto ${
@@ -381,14 +555,28 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Deck Name</label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Give your deck a name"
-                    maxLength={50}
-                  />
+                <div className="flex gap-2 items-center">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">Deck Name</label>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Give your deck a name"
+                      maxLength={50}
+                    />
+                  </div>
+                  <div className="flex-shrink-0">
+                    <label className="block text-sm font-medium mb-1">&nbsp;</label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleImport}
+                      disabled={!isMounted}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import
+                    </Button>
+                  </div>
                 </div>
 
                 <div>
@@ -547,7 +735,7 @@ Alternative Cards:
                     value={cardSearchQuery}
                     onChange={(e) => setCardSearchQuery(e.target.value)}
                     placeholder="Search for cards..."
-                    className={`w-full ${isDarkMode ? 'bg-gray-800 text-white placeholder:text-gray-400' : 'bg-white text-gray-900 placeholder:text-gray-500'}`}
+                    className="w-full"
                   />
                   {cardSearchQuery && availableCards.length > 0 && (
                     <div className={`absolute left-0 right-0 mt-1 z-10 rounded-md border shadow-lg max-h-60 overflow-y-auto ${
