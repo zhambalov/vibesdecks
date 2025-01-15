@@ -358,6 +358,37 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
     }
   };
 
+  const copyDeckToClipboard = () => {
+    if (!formData) return;
+    
+    const deckData = {
+      deckName: formData.title,
+      counts: formData.cards.reduce((acc: { [key: string]: number }, card) => {
+        const cardDetails = availableCards.find(c => c.id === card.cardId);
+        if (!cardDetails) return acc;
+        
+        // Convert card name to camelCase without special characters
+        const cardName = cardDetails.name
+          .split(/[\s,'`!]+/) // Split on spaces and special characters
+          .map((word, index) => 
+            index === 0 
+              ? word 
+              : word.charAt(0).toUpperCase() + word.slice(1)
+          )
+          .join('');
+        
+        acc[cardName] = (acc[cardName] || 0) + card.quantity;
+        return acc;
+      }, {})
+    };
+    
+    navigator.clipboard.writeText(JSON.stringify(deckData));
+    toast({
+      title: "Copied to clipboard",
+      description: "Deck data has been copied to your clipboard"
+    });
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="flex flex-col sm:flex-row gap-6">
