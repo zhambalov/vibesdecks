@@ -367,14 +367,17 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
         const cardDetails = availableCards.find(c => c.id === card.cardId);
         if (!cardDetails) return acc;
         
-        // Convert card name to camelCase without special characters
+        // Convert to camelCase without any special characters, first letter uppercase
         const cardName = cardDetails.name
-          .split(/[\s,'`!]+/) // Split on spaces and special characters
-          .map((word, index) => 
-            index === 0 
-              ? word 
-              : word.charAt(0).toUpperCase() + word.slice(1)
-          )
+          .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters but keep spaces
+          .split(/\s+/) // Split on whitespace
+          .map((word, index) => {
+            const cleanWord = word.toLowerCase();
+            // First word should start with uppercase
+            return index === 0 
+              ? cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1)
+              : cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1);
+          })
           .join('');
         
         acc[cardName] = (acc[cardName] || 0) + card.quantity;

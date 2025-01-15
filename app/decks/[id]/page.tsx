@@ -136,7 +136,16 @@ export default function DeckPage() {
     const deckData = {
       deckName: deck.title,
       counts: deck.cards.reduce((acc: { [key: string]: number }, card) => {
-        const cardName = card.card.name.replace(/[\s']/g, '');
+        // Convert to camelCase without any special characters
+        const cardName = card.card.name
+          .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters but keep spaces
+          .split(/\s+/) // Split on whitespace
+          .map((word, index) => {
+            const cleanWord = word.toLowerCase();
+            return index === 0 ? cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1) : cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1);
+          })
+          .join('');
+        
         acc[cardName] = (acc[cardName] || 0) + card.quantity;
         return acc;
       }, {})
