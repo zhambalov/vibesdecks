@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
-import { Minus, Plus, Upload } from "lucide-react"
+import { Minus, Plus, Download } from "lucide-react"
 import { useTheme } from 'next-themes'
 
 interface CardOption {
@@ -573,7 +573,7 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                       onClick={handleImport}
                       disabled={!isMounted}
                     >
-                      <Upload className="h-4 w-4 mr-2" />
+                      <Download className="h-4 w-4 mr-2" />
                       Import
                     </Button>
                   </div>
