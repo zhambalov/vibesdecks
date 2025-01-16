@@ -372,12 +372,15 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
           .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters but keep spaces
           .split(/\s+/) // Split on whitespace
           .map((word, index) => {
-            // Special cases for small words
+            // Special cases
+            const upperWord = word.toUpperCase();
+            if (upperWord === 'OK') return 'OK';
+            // Small words
             const lowerWord = word.toLowerCase();
             if (lowerWord === 'a' || lowerWord === 'the' || lowerWord === 'of') {
               return lowerWord;
             }
-            // For all other words, capitalize first letter
+            // For all other words, capitalize first letter only
             return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
           })
           .join('');
