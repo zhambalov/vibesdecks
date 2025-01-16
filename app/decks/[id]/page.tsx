@@ -263,35 +263,59 @@ export default function DeckPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username })
       })
+
+      if (!response.ok) throw new Error('Failed to like deck')
       
-      if (!response.ok) throw new Error('Failed to update like')
-      const { liked, likesCount } = await response.json()
-      
-      setDeck(prev => prev ? {
-        ...prev,
-        likesCount,
-        liked
-      } : null)
-      
-      localStorage.setItem(`deck-${deck.id}-liked-${username}`, liked.toString())
-      
-      toast({
-        title: liked ? "Added to favorites" : "Removed from favorites",
-        description: liked ? "Deck added to your favorites" : "Deck removed from your favorites",
-      })
+      const data = await response.json()
+      setDeck(prev => prev ? { ...prev, liked: data.liked, likesCount: data.likesCount } : null)
     } catch (error) {
-      console.error('Error updating like:', error)
+      console.error('Error liking deck:', error)
       toast({
         title: "Error",
-        description: "Failed to update like",
+        description: "Failed to like deck",
         variant: "destructive",
       })
     }
   }
 
-  const handleComment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!username || !deck) {
+  const handleDeleteComment = async (commentId: string) => {
+    if (!username) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to delete comments",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/decks/${id}/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      })
+
+      if (!response.ok) throw new Error('Failed to delete comment')
+      
+      // Remove the comment from the state
+      setComments(prev => prev.filter(comment => comment.id !== commentId))
+      
+      toast({
+        title: "Comment deleted",
+        description: "Your comment has been deleted successfully"
+      })
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete comment",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleComment = async (parentId: string | null) => {
+    if (!username) {
       toast({
         title: "Authentication required",
         description: "Please login to comment",
@@ -299,31 +323,37 @@ export default function DeckPage() {
       })
       return
     }
-    
-    if (newComment.length > 600) {
-      toast({
-        title: "Comment too long",
-        description: "Comments cannot exceed 600 characters",
-        variant: "destructive",
-      })
-      return
-    }
-    
+
+    const content = parentId ? replyContent : newComment
+    if (!content.trim()) return
+
     try {
       const response = await fetch(`/api/decks/${id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, content: newComment })
+        body: JSON.stringify({
+          content,
+          username,
+          parentId
+        })
       })
-      
+
       if (!response.ok) throw new Error('Failed to post comment')
       
-      setNewComment('')
+      // Refresh comments
       await fetchComments()
       
+      // Reset form
+      if (parentId) {
+        setReplyContent('')
+        setReplyingTo(null)
+      } else {
+        setNewComment('')
+      }
+
       toast({
-        title: "Comment posted",
-        description: "Your comment has been added successfully",
+        title: parentId ? "Reply posted" : "Comment posted",
+        description: parentId ? "Your reply has been posted successfully" : "Your comment has been posted successfully"
       })
     } catch (error) {
       console.error('Error posting comment:', error)
@@ -726,130 +756,131 @@ export default function DeckPage() {
           )}
 
           {/* Comments Section */}
-          <Card className={`mt-4 sm:mt-6 p-4 sm:p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <h2 className="text-lg font-bold mb-4">Comments</h2>
-            
-            {username && (
-              <form onSubmit={handleComment} className="mb-6">
-                <Textarea
-                  value={newComment}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 600) {
-                      setNewComment(e.target.value)
-                    }
-                  }}
-                  placeholder="Write a comment..."
-                  className="mb-2 min-h-[100px]"
-                />
-                <div className="flex justify-between items-center">
-                  <span className={`text-xs ${newComment.length > 600 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                    {newComment.length}/600
-                  </span>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={!newComment.trim() || newComment.length > 600}
-                  >
-                    Post
-                  </Button>
-                </div>
-              </form>
-            )}
-
+          <div className="mt-8">
+            <h3 className="text-xl font-bold mb-4">Comments</h3>
             <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment.id} className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm">{comment.user.username}</p>
-                      <p className={`mt-1 text-sm break-words ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {comment.content}
-                      </p>
+              {comments.map(comment => (
+                <div key={comment.id} className="p-4 rounded-lg bg-background/50">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{comment.user.username}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {formatDate(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-2">{comment.content}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDate(comment.createdAt)}
-                    </span>
-                  </div>
-
-                  {/* Reply button and form */}
-                  {username && (
-                    <div className="mt-2">
+                    {username === comment.user.username && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-100/10"
                       >
-                        Reply
+                        Delete
                       </Button>
-
-                      {replyingTo === comment.id && (
-                        <div className="mt-2">
-                          <Textarea
-                            value={replyContent}
-                            onChange={(e) => {
-                              if (e.target.value.length <= 600) {
-                                setReplyContent(e.target.value)
-                              }
-                            }}
-                            placeholder="Write a reply..."
-                            className="mb-2 min-h-[80px]"
-                          />
-                          <div className="flex justify-between items-center">
-                            <span className={`text-xs ${replyContent.length > 600 ? 'text-red-500' : 'text-muted-foreground'}`}>
-                              {replyContent.length}/600
-                            </span>
-                            <div className="space-x-2">
+                    )}
+                  </div>
+                  
+                  {/* Replies */}
+                  {comment.replies && comment.replies.length > 0 && (
+                    <div className="ml-8 mt-4 space-y-4">
+                      {comment.replies.map(reply => (
+                        <div key={reply.id} className="p-4 rounded-lg bg-background/30">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{reply.user.username}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {formatDate(reply.createdAt)}
+                                </span>
+                              </div>
+                              <p className="mt-2">{reply.content}</p>
+                            </div>
+                            {username === reply.user.username && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => {
-                                  setReplyingTo(null)
-                                  setReplyContent('')
-                                }}
+                                onClick={() => handleDeleteComment(reply.id)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-100/10"
                               >
-                                Cancel
+                                Delete
                               </Button>
-                              <Button
-                                size="sm"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => handleReply(comment.id)}
-                                disabled={!replyContent.trim() || replyContent.length > 600}
-                              >
-                                Reply
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Replies */}
-                  {comment.replies && comment.replies.length > 0 && (
-                    <div className="ml-4 sm:ml-6 mt-3 space-y-3">
-                      {comment.replies.map((reply) => (
-                        <div key={reply.id} className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="min-w-0">
-                              <p className="font-medium text-sm">{reply.user.username}</p>
-                              <p className={`mt-1 text-sm break-words ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                {reply.content}
-                              </p>
-                            </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
-                              {formatDate(reply.createdAt)}
-                            </span>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
+                  
+                  {/* Reply Form */}
+                  {username && replyingTo === comment.id && (
+                    <div className="mt-4 ml-8">
+                      <Textarea
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder="Write your reply..."
+                        className="mb-2"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleComment(comment.id)}
+                          disabled={!replyContent.trim()}
+                        >
+                          Reply
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setReplyingTo(null)
+                            setReplyContent('')
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {username && replyingTo !== comment.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setReplyingTo(comment.id)}
+                      className="mt-2"
+                    >
+                      Reply
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
-          </Card>
+            
+            {/* New Comment Form */}
+            {username && (
+              <div className="mt-6">
+                <Textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment..."
+                  className="mb-2"
+                />
+                <Button
+                  onClick={() => handleComment(null)}
+                  disabled={!newComment.trim()}
+                >
+                  Post Comment
+                </Button>
+              </div>
+            )}
+            
+            {!username && (
+              <p className="text-muted-foreground mt-4">
+                Please login to comment on this deck.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Desktop Cards Section */}
