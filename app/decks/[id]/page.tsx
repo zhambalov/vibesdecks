@@ -66,6 +66,42 @@ function formatDate(date: Date) {
   })
 }
 
+function formatDescription(description: string | null): string {
+  if (!description) return '';
+  
+  // If the description already contains HTML formatting, preserve it
+  if (description.includes('<p>') || description.includes('<div>') || 
+      description.includes('<a') || description.includes('<img') ||
+      description.includes('<iframe')) {
+    return description;
+  }
+  
+  // Handle legacy format (plain text with line breaks)
+  const sections = description.split(/\n\n+/);
+  return sections
+    .map(section => {
+      const lines = section.split(/\n/);
+      return lines
+        .map(line => {
+          // Preserve URLs as clickable links
+          const urlRegex = /(https?:\/\/[^\s]+)/g;
+          return line.trim().replace(urlRegex, (url) => {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+              const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i)?.[1];
+              if (videoId) {
+                return `<iframe width="640" height="360" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+              }
+            }
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+          });
+        })
+        .filter(line => line.length > 0)
+        .join('<br />');
+    })
+    .map(section => `<p>${section}</p>`)
+    .join('\n\n');
+}
+
 export default function DeckPage() {
   const params = useParams()
   const id = params.id as string
@@ -418,92 +454,6 @@ export default function DeckPage() {
     }
   }
 
-  const formatDescription = (text: string, cards: (DeckCard & { card: CardType })[]) => {
-    if (!text) return null
-    
-    const cardNames = cards.map(dc => dc.card.name)
-    
-    // Split by HTML tags first
-    const parts = text.split(/(<\/?[^>]+>|\n•\s+|\n\n)/g)
-    
-    let inTitle = false
-    let inSubtitle = false
-    let inBold = false
-    
-    return parts.map((part, index) => {
-      if (!part) return null
-      
-      // Handle opening tags
-      if (part === '<h1>') {
-        inTitle = true
-        return null
-      }
-      if (part === '<h2>') {
-        inSubtitle = true
-        return null
-      }
-      if (part === '<b>') {
-        inBold = true
-        return null
-      }
-      
-      // Handle closing tags
-      if (part === '</h1>') {
-        inTitle = false
-        return null
-      }
-      if (part === '</h2>') {
-        inSubtitle = false
-        return null
-      }
-      if (part === '</b>') {
-        inBold = false
-        return null
-      }
-      
-      // Handle bullet points
-      if (part.startsWith('\n• ')) {
-        return <li key={index} className="ml-4 mt-1">{part.slice(3)}</li>
-      }
-      
-      // Handle new lines
-      if (part === '\n\n') {
-        return <br key={index} />
-      }
-      
-      // Handle text with active formatting
-      if (part.trim()) {
-        let element = (
-          <span key={index}>
-            {part.split(/(\s+)/).map((word, wordIndex) => {
-              const trimmedWord = word.trim()
-              if (cardNames.includes(trimmedWord)) {
-                return (
-                  <span key={wordIndex} className="font-medium text-primary hover:underline cursor-pointer">
-                    {word}
-                  </span>
-                )
-              }
-              return word
-            })}
-          </span>
-        )
-        
-        if (inTitle) {
-          element = <h2 key={index} className="text-2xl font-bold mt-6 mb-3">{element}</h2>
-        } else if (inSubtitle) {
-          element = <h3 key={index} className="text-xl font-semibold mt-4 mb-2">{element}</h3>
-        } else if (inBold) {
-          element = <strong key={index}>{element}</strong>
-        }
-        
-        return element
-      }
-      
-      return null
-    }).filter(Boolean)
-  }
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -741,20 +691,10 @@ export default function DeckPage() {
           {/* Description Section */}
           {deck.description && (
             <Card className={`mt-4 sm:mt-6 p-4 sm:p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-              <div className="prose dark:prose-invert max-w-none text-sm 
-                [&_strong]:text-sm [&_strong]:font-semibold [&_strong]:text-blue-500/90 dark:[&_strong]:text-blue-400/90
-                [&_b]:text-sm [&_b]:font-medium
-                [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2
-                [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5"
-              >
-                {deck.description.split('\n').map((paragraph, index) => (
-                  paragraph && (
-                    <div key={index} className="mb-3 last:mb-0">
-                      {formatDescription(paragraph, deck.cards)}
-                    </div>
-                  )
-                ))}
-              </div>
+              <div 
+                className="prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: formatDescription(deck.description) }}
+              />
             </Card>
           )}
 

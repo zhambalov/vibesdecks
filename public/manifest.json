@@ -1,0 +1,28 @@
+{
+  "name": "VibesDecks - Pudgy Penguins Vibes TCG",
+  "short_name": "Vibes TCG",
+  "description": "Create and share Vibes TCG decks. The official deck builder for Pudgy Penguins Vibes trading card game.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFBFF",
+  "theme_color": "#FAFBFF",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/maskable-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+} 

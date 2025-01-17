@@ -5,9 +5,8 @@ import { useTheme } from 'next-themes';
 import { DeckCollection } from '@/components/decks/deck-collection';
 import { CategoryNav } from '@/components/ui/categorynav';
 import { Card } from "@/components/ui/card";
-import { jsonLd } from './metadata';
 
-export default function Home() {
+export function HomeContent() {
   const [mounted, setMounted] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const { theme } = useTheme();
@@ -46,48 +45,42 @@ export default function Home() {
   ];
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <main>
-        <section className="max-w-6xl mx-auto w-full px-4 py-4 sm:py-6">
-          <h2 className="text-base sm:text-lg font-medium mb-4 sm:mb-6 flex items-center gap-2">
-            <span className="text-xl">⭐</span>
-            <span>Featured Collections</span>
-          </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {featuredCollections.map((collection) => (
-              <Card
-                key={collection.title}
-                className={`group p-4 sm:p-6 transition-all duration-300 cursor-pointer backdrop-blur-xl ${getCollectionStyle(collection.type)}`}
-              >
-                <div className="flex flex-col gap-2 sm:gap-3">
-                  <span className="text-xl sm:text-2xl">{collection.emoji}</span>
-                  <div>
-                    <h3 className={`text-sm sm:text-base font-medium mb-0.5 sm:mb-1 group-hover:translate-x-0.5 transition-transform line-clamp-1 ${
-                      isDarkMode ? 'text-gray-100' : ''
-                    }`}>
-                      {collection.title}
-                    </h3>
-                    <p className={`text-xs sm:text-sm group-hover:translate-x-0.5 transition-transform ${
-                      isDarkMode ? 'text-gray-400' : 'text-muted-foreground'
-                    }`}>
-                      {collection.decks} decks
-                    </p>
-                  </div>
+    <main>
+      <section className="max-w-6xl mx-auto w-full px-4 py-4 sm:py-6">
+        <h2 className="text-base sm:text-lg font-medium mb-4 sm:mb-6 flex items-center gap-2">
+          <span className="text-xl">⭐</span>
+          <span>Featured Collections</span>
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {featuredCollections.map((collection) => (
+            <Card
+              key={collection.title}
+              className={`group p-4 sm:p-6 transition-all duration-300 cursor-pointer backdrop-blur-xl ${getCollectionStyle(collection.type)}`}
+            >
+              <div className="flex flex-col gap-2 sm:gap-3">
+                <span className="text-xl sm:text-2xl">{collection.emoji}</span>
+                <div>
+                  <h3 className={`text-sm sm:text-base font-medium mb-0.5 sm:mb-1 group-hover:translate-x-0.5 transition-transform line-clamp-1 ${
+                    isDarkMode ? 'text-gray-100' : ''
+                  }`}>
+                    {collection.title}
+                  </h3>
+                  <p className={`text-xs sm:text-sm group-hover:translate-x-0.5 transition-transform ${
+                    isDarkMode ? 'text-gray-400' : 'text-muted-foreground'
+                  }`}>
+                    {collection.decks} decks
+                  </p>
                 </div>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <div className="mt-4 sm:mt-6">
-          <CategoryNav activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-          <DeckCollection activeCategory={activeCategory} />
+              </div>
+            </Card>
+          ))}
         </div>
-      </main>
-    </>
+      </section>
+
+      <div className="mt-4 sm:mt-6">
+        <CategoryNav activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+        <DeckCollection activeCategory={activeCategory} />
+      </div>
+    </main>
   );
-}
+} 

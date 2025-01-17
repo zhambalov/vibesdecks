@@ -13,20 +13,33 @@ export async function GET(request: Request) {
 
     const decks = await prisma.deck.findMany({
       where: {
-        title: {
-          contains: query,
-          mode: 'insensitive'
-        }
+        OR: [
+          {
+            title: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          },
+          {
+            description: {
+              contains: query,
+              mode: 'insensitive'
+            }
+          }
+        ]
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        color: true,
         author: {
           select: { username: true }
-        },
-        likes: true
+        }
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 10
     })
 
     return NextResponse.json(decks)

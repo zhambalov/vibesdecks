@@ -1,6 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Image from '@tiptap/extension-image'
+import Link from '@tiptap/extension-link'
+import Underline from '@tiptap/extension-underline'
+import TextAlign from '@tiptap/extension-text-align'
+import TextStyle from '@tiptap/extension-text-style'
+import { FontSize } from './extensions/font-size'
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -15,9 +23,29 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
-import { Textarea } from "@/components/ui/textarea"
-import { Minus, Plus, Download } from "lucide-react"
+import { 
+  Minus, 
+  Plus, 
+  Download, 
+  Bold, 
+  Link as LinkIcon, 
+  Image as ImageIcon, 
+  Italic, 
+  Underline as UnderlineIcon, 
+  Strikethrough, 
+  List, 
+  ListOrdered, 
+  Undo, 
+  Redo, 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight,
+  Type
+} from "lucide-react"
 import { useTheme } from 'next-themes'
+import './deck-builder.css'
+import { ResizableImage } from './extensions/resizable-image'
+import Youtube from '@tiptap/extension-youtube'
 
 interface CardOption {
   id: string
@@ -40,6 +68,12 @@ interface DeckFormData {
 interface Props {
   mode?: 'create' | 'edit'
   deckId?: string
+}
+
+function getYouTubeVideoId(url: string) {
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[7].length === 11) ? match[7] : null;
 }
 
 export function DeckBuilder({ mode = 'create', deckId }: Props) {
@@ -397,18 +431,175 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
     });
   };
 
+  const editor = useEditor({
+    extensions: [
+      TextStyle,
+      FontSize,
+      StarterKit.configure({
+        heading: false
+      }),
+      ResizableImage.configure({
+        HTMLAttributes: {
+          class: 'resizable-image',
+        },
+      }),
+      Youtube.configure({
+        width: 480,
+        height: 270,
+        allowFullscreen: true,
+        modestBranding: true,
+        controls: true
+      }),
+      Link.configure({
+        openOnClick: true,
+        autolink: true,
+        HTMLAttributes: {
+          class: 'text-blue-500 hover:text-blue-600 underline'
+        },
+        validate: url => {
+          // If it's a YouTube URL, we'll handle it specially
+          if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const videoId = getYouTubeVideoId(url);
+            if (videoId) {
+              editor?.commands.setYoutubeVideo({
+                src: url
+              });
+              return false; // Don't create a regular link
+            }
+          }
+          return true; // Create a regular link for non-YouTube URLs
+        }
+      }),
+      Underline,
+      TextAlign.configure({
+        types: ['paragraph'],
+      }),
+    ],
+    content: formData.description,
+    onUpdate: ({ editor }) => {
+      setFormData(prev => ({ ...prev, description: editor.getHTML() }))
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose dark:prose-invert max-w-none min-h-[300px] outline-none',
+      },
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items
+        if (!items) return false
+
+        for (const item of items) {
+          if (item.type.startsWith('image/')) {
+            event.preventDefault()
+            const file = item.getAsFile()
+            if (!file) continue
+
+            const formData = new FormData()
+            formData.append('file', file)
+
+            fetch('/api/upload', {
+              method: 'POST',
+              body: formData
+            })
+              .then(response => response.json())
+              .then(data => {
+                editor?.chain().focus().setImage({ src: data.url }).run()
+              })
+              .catch(error => {
+                console.error('Error uploading pasted image:', error)
+                toast({
+                  title: "Error",
+                  description: "Failed to upload image. Please try again.",
+                  variant: "destructive"
+                })
+              })
+
+            return true
+          }
+        }
+
+        return false
+      },
+      handleDOMEvents: {
+        mousedown: (view, event) => {
+          const target = event.target as HTMLElement;
+          
+          // Handle image resizing
+          if (target.classList.contains('resizable-image')) {
+            event.preventDefault();
+            const startX = event.clientX;
+            const startWidth = target.offsetWidth;
+
+            const handleMouseMove = (e: MouseEvent) => {
+              const currentX = e.clientX;
+              const diff = currentX - startX;
+              const newWidth = Math.max(100, startWidth + diff);
+              
+              // Find the image node and update its width
+              const { state } = view;
+              const { from } = state.selection;
+              const node = state.doc.nodeAt(from);
+              
+              if (node && node.type.name === 'resizableImage') {
+                editor?.chain().focus().setImageWidth(`${newWidth}px`).run();
+              }
+            };
+
+            const handleMouseUp = () => {
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+            };
+
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+
+            return true;
+          }
+          
+          // Handle video resizing
+          if (target.closest('.resizable-video')) {
+            event.preventDefault();
+            const container = target.closest('.resizable-video') as HTMLElement;
+            const startX = event.clientX;
+            const startWidth = container.offsetWidth;
+
+            const handleMouseMove = (e: MouseEvent) => {
+              const currentX = e.clientX;
+              const diff = currentX - startX;
+              const newWidth = Math.max(320, startWidth + diff); // Minimum width of 320px
+              container.style.width = `${newWidth}px`;
+              // Maintain 16:9 aspect ratio
+              container.style.height = `${(newWidth * 9) / 16}px`;
+            };
+
+            const handleMouseUp = () => {
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+            };
+
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+
+            return true;
+          }
+
+          return false;
+        }
+      }
+    }
+  })
+
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="flex flex-col sm:flex-row gap-6">
+    <div className="container-lg p-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
-          <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">{mode === 'edit' ? 'Edit' : 'Create New'} Deck</h2>
+          <Card className="card card-spacing">
+            <h2 className="h2 mb-4">{mode === 'edit' ? 'Edit' : 'Create New'} Deck</h2>
             
             {/* Mobile Cards Toggle */}
             <div className="sm:hidden mb-4">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full btn-md"
                 onClick={() => setShowMobileCards(!showMobileCards)}
               >
                 {showMobileCards ? 'Hide' : 'Show'} Cards ({formData.cards.reduce((total, card) => total + card.quantity, 0)} / 52)
@@ -592,176 +783,168 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex gap-2 items-center">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium mb-1">Deck Name</label>
-                    <Input
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Give your deck a name"
-                      maxLength={50}
-                    />
+            <form onSubmit={handleSubmit} className="section-spacing">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium mb-1">Deck Name</label>
+                      <Input
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        placeholder="Give your deck a name"
+                        maxLength={50}
+                      />
+                    </div>
+                    <div className="flex-shrink-0">
+                      <label className="block text-sm font-medium mb-1">&nbsp;</label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleImport}
+                        disabled={!isMounted}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Import
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex-shrink-0">
-                    <label className="block text-sm font-medium mb-1">&nbsp;</label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleImport}
-                      disabled={!isMounted}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Color</label>
+                    <Select
+                      value={formData.color}
+                      onValueChange={(value: DeckColor) => setFormData({ ...formData, color: value })}
                     >
-                      <Download className="h-4 w-4 mr-2" />
-                      Import
-                    </Button>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="RED">Red</SelectItem>
+                        <SelectItem value="BLUE">Blue</SelectItem>
+                        <SelectItem value="GREEN">Green</SelectItem>
+                        <SelectItem value="YELLOW">Yellow</SelectItem>
+                        <SelectItem value="PURPLE">Purple</SelectItem>
+                        <SelectItem value="GREY">Grey</SelectItem>
+                        <SelectItem value="ROD">Rod</SelectItem>
+                        <SelectItem value="RELIC">Relic</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <div className="bg-secondary/20 rounded-lg p-4 mb-2 text-sm space-y-2">
+                      <p className="font-medium">Tips for a great deck description:</p>
+                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                        <li>Start with a brief overview of your deck&apos;s main strategy</li>
+                        <li>Explain key card combinations and how they work together</li>
+                        <li>Share tips about the mulligan phase and what cards to look for</li>
+                        <li>Describe matchups against different deck types</li>
+                        <li>Include a section about alternative card choices</li>
+                      </ul>
+                    </div>
+                    <div className="border rounded-t-md border-b-0 bg-muted p-1 flex flex-wrap gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor?.chain().focus().undo().run()}
+                        disabled={!editor?.can().undo()}
+                      >
+                        <Undo className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor?.chain().focus().redo().run()}
+                        disabled={!editor?.can().redo()}
+                      >
+                        <Redo className="h-4 w-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-border mx-1 my-auto" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor?.chain().focus().toggleBold().run()}
+                        className={`tiptap-toolbar-button ${editor?.isActive('bold') ? 'data-[active=true]' : ''}`}
+                        data-active={editor?.isActive('bold')}
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor?.chain().focus().toggleItalic().run()}
+                        className={`tiptap-toolbar-button ${editor?.isActive('italic') ? 'data-[active=true]' : ''}`}
+                        data-active={editor?.isActive('italic')}
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor?.chain().focus().toggleUnderline().run()}
+                        className={`tiptap-toolbar-button ${editor?.isActive('underline') ? 'data-[active=true]' : ''}`}
+                        data-active={editor?.isActive('underline')}
+                      >
+                        <UnderlineIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => editor?.chain().focus().toggleStrike().run()}
+                        className={`tiptap-toolbar-button ${editor?.isActive('strike') ? 'data-[active=true]' : ''}`}
+                        data-active={editor?.isActive('strike')}
+                      >
+                        <Strikethrough className="h-4 w-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-border mx-1 my-auto" />
+                      <Select
+                        value={editor?.isActive('textStyle', { fontSize: '20px' }) ? '20' :
+                               editor?.isActive('textStyle', { fontSize: '16px' }) ? '16' :
+                               editor?.isActive('textStyle', { fontSize: '14px' }) ? '14' : '16'}
+                        onValueChange={(value) => editor?.chain().focus().setFontSize(`${value}px`).run()}
+                      >
+                        <SelectTrigger className="h-8 w-[80px]">
+                          <SelectValue placeholder="16px" />
+                        </SelectTrigger>
+                        <SelectContent align="start">
+                          <SelectItem value="14">14px</SelectItem>
+                          <SelectItem value="16">16px</SelectItem>
+                          <SelectItem value="20">20px</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className={`border rounded-b-md p-4 min-h-[300px] ${isDarkMode ? 'bg-background' : 'bg-white'}`}>
+                      <EditorContent 
+                        editor={editor} 
+                        className="prose dark:prose-invert max-w-none min-h-[300px] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <Button type="submit" disabled={isLoading} className="w-full">
+                    {isLoading ? (mode === 'edit' ? 'Saving...' : 'Creating...') : (mode === 'edit' ? 'Save Changes' : 'Create Deck')}
+                  </Button>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Color</label>
-                  <Select
-                    value={formData.color}
-                    onValueChange={(value: DeckColor) => setFormData({ ...formData, color: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="RED">Red</SelectItem>
-                      <SelectItem value="BLUE">Blue</SelectItem>
-                      <SelectItem value="GREEN">Green</SelectItem>
-                      <SelectItem value="YELLOW">Yellow</SelectItem>
-                      <SelectItem value="PURPLE">Purple</SelectItem>
-                      <SelectItem value="GREY">Grey</SelectItem>
-                      <SelectItem value="ROD">Rod</SelectItem>
-                      <SelectItem value="RELIC">Relic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <div className="bg-secondary/20 rounded-lg p-4 mb-2 text-sm space-y-2">
-                    <p className="font-medium">Tips for a great deck description:</p>
-                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                      <li>Start with a brief overview of your deck&apos;s main strategy</li>
-                      <li>Explain key card combinations and how they work together</li>
-                      <li>Share tips about the mulligan phase and what cards to look for</li>
-                      <li>Describe matchups against different deck types</li>
-                      <li>Include a section about alternative card choices</li>
-                    </ul>
-                  </div>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder={`Example:
-Its not an easy deck to play, but once you learn the combos, it becomes much more manageable.
-
-The first question we always want to answer is about the mulligan. In this deck, the most crucial thing to know is that the mulligan is 70% of your path to victory.
-
-Key Combos:
-- Card A + Card B: Explain the interaction
-- Card C + Card D: Another key combo
-
-Mulligan Guide:
-- Always keep: Card X, Card Y
-- Situational keeps: Card Z (explain when)
-
-Alternative Cards:
-- If you don't have Card M, you can use Card N
-- Card P is also a good option if you face a lot of aggressive decks`}
-                    className="min-h-[300px] font-medium"
-                  />
-                  <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                    <p>Text Style:</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const textarea = document.querySelector('textarea')
-                        if (textarea) {
-                          const start = textarea.selectionStart
-                          const end = textarea.selectionEnd
-                          const text = textarea.value
-                          const selectedText = text.slice(start, end)
-                          const newText = text.slice(0, start) + `<b>${selectedText}</b>` + text.slice(end)
-                          setFormData({ ...formData, description: newText })
-                          setTimeout(() => {
-                            textarea.selectionStart = start + 3
-                            textarea.selectionEnd = end + 3
-                            textarea.focus()
-                          }, 0)
-                        }
-                      }}
-                    >
-                      Bold
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const textarea = document.querySelector('textarea')
-                        if (textarea) {
-                          const start = textarea.selectionStart
-                          const end = textarea.selectionEnd
-                          const text = textarea.value
-                          const selectedText = text.slice(start, end)
-                          const newText = text.slice(0, start) + `<h1>${selectedText}</h1>` + text.slice(end)
-                          setFormData({ ...formData, description: newText })
-                          setTimeout(() => {
-                            textarea.selectionStart = start + 4
-                            textarea.selectionEnd = end + 4
-                            textarea.focus()
-                          }, 0)
-                        }
-                      }}
-                    >
-                      Title
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const textarea = document.querySelector('textarea')
-                        if (textarea) {
-                          const start = textarea.selectionStart
-                          const end = textarea.selectionEnd
-                          const text = textarea.value
-                          const selectedText = text.slice(start, end)
-                          const newText = text.slice(0, start) + `<h2>${selectedText}</h2>` + text.slice(end)
-                          setFormData({ ...formData, description: newText })
-                          setTimeout(() => {
-                            textarea.selectionStart = start + 4
-                            textarea.selectionEnd = end + 4
-                            textarea.focus()
-                          }, 0)
-                        }
-                      }}
-                    >
-                      Subtitle
-                    </Button>
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? (mode === 'edit' ? 'Saving...' : 'Creating...') : (mode === 'edit' ? 'Save Changes' : 'Create Deck')}
-                </Button>
               </div>
             </form>
           </Card>
         </div>
 
         {/* Desktop Cards Section */}
-        <div className="hidden sm:block w-80">
+        <div className="hidden sm:block w-72">
           <div className="sticky top-4">
-            <Card className="p-6">
-              <h2 className="text-lg font-bold mb-4 flex justify-between items-center">
+            <Card className="card">
+              <h2 className="h2 mb-4 flex justify-between items-center">
                 <span>Cards</span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-muted-foreground">
                   {formData.cards.reduce((total, card) => total + card.quantity, 0)} total
                 </span>
               </h2>
@@ -880,9 +1063,9 @@ Alternative Cards:
                             cardDetails?.color === 'RELIC' ? 'bg-black' :
                             'bg-gray-500'
                           }`} />
-                          <span className="font-medium text-sm">{cardDetails?.name}</span>
+                          <span className="font-medium text-sm truncate">{cardDetails?.name}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Button
                             type="button"
                             variant="ghost"
@@ -897,9 +1080,9 @@ Alternative Cards:
                               setFormData({...formData, cards: newCards})
                             }}
                           >
-                            <Minus className="h-4 w-4" />
+                            <Minus className="h-3 w-3" />
                           </Button>
-                          <span>{card.quantity}</span>
+                          <span className="w-6 text-center text-sm">{card.quantity}</span>
                           <Button
                             type="button"
                             variant="ghost"
@@ -929,7 +1112,7 @@ Alternative Cards:
                               setFormData({...formData, cards: newCards})
                             }}
                           >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>

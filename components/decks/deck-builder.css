@@ -1,0 +1,185 @@
+.ProseMirror {
+  min-height: 300px;
+  padding: 0.5rem;
+}
+
+/* Add styles for active formatting */
+.ProseMirror strong {
+  font-weight: 700;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror u {
+  text-decoration: underline;
+}
+
+.ProseMirror s {
+  text-decoration: line-through;
+}
+
+/* Font size buttons */
+.font-size-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+}
+
+.font-size-button[data-active="true"] {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+}
+
+/* Make active buttons more visible */
+.tiptap-toolbar-button {
+  position: relative;
+}
+
+.tiptap-toolbar-button[data-active="true"] {
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--foreground));
+}
+
+.tiptap-toolbar-button[data-active="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background-color: hsl(var(--primary));
+  border-radius: 1px;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75em;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding: 0 1rem;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.ProseMirror h1 {
+  font-size: 1.875rem;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+}
+
+.ProseMirror p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.dark .ProseMirror a {
+  color: #60a5fa;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.ProseMirror blockquote {
+  padding-left: 1rem;
+  border-left: 2px solid #e5e7eb;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.dark .ProseMirror blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  margin-right: 0.5rem;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+.ProseMirror pre {
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+
+.dark .ProseMirror pre {
+  background: #1f2937;
+}
+
+.ProseMirror code {
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875em;
+}
+
+.dark .ProseMirror code {
+  background: #1f2937;
+}
+
+/* Remove all YouTube-related styles */
+.youtube-embed,
+.youtube-embed iframe,
+.resizable-video,
+.resizable-video iframe {
+  display: none;
+}
+
+/* Keep other existing styles... */
+
+.prose.dark\:prose-invert {
+  --tw-prose-body: hsl(var(--foreground));
+  --tw-prose-bold: hsl(var(--foreground));
+  --tw-prose-italic: hsl(var(--foreground));
+}
+
+.dark button[type="submit"] {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.dark button[type="submit"]:hover {
+  background-color: hsl(var(--primary) / 0.9);
+} 
