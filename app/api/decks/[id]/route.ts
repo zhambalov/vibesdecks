@@ -51,6 +51,22 @@ export async function GET(
       return NextResponse.json({ error: 'Deck not found' }, { status: 404 })
     }
 
+    // Format description if it's plain text
+    let formattedDescription = deck.description
+    if (formattedDescription && !formattedDescription.includes('<p>') && !formattedDescription.includes('<div>')) {
+      formattedDescription = formattedDescription
+        .split(/\n\n+/)
+        .map(section => {
+          const lines = section.split(/\n/)
+          return lines
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .join('<br />')
+        })
+        .map(section => `<p>${section}</p>`)
+        .join('\n\n')
+    }
+
     if (sessionId && !deck.viewedSessions.includes(sessionId)) {
       await prisma.deck.update({
         where: { id: params.id },
@@ -83,6 +99,7 @@ export async function GET(
 
     return NextResponse.json({
       ...deck,
+      description: formattedDescription,
       liked,
       likesCount: deck._count.likes
     })

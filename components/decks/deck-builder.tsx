@@ -588,6 +588,13 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
     }
   })
 
+  // Update editor content when formData.description changes
+  useEffect(() => {
+    if (editor && formData.description !== editor.getHTML()) {
+      editor.commands.setContent(formData.description)
+    }
+  }, [editor, formData.description])
+
   return (
     <div className="container-lg p-4">
       <div className="flex flex-col sm:flex-row gap-4">
