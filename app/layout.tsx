@@ -79,15 +79,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className={`min-h-screen flex flex-col ${
-              'dark:bg-gradient-to-b dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 ' +
-              'bg-gradient-to-b from-[#FAFBFF] to-[#FCFDFF]'
-            }`}>
+            <div className="min-h-screen flex flex-col bg-background">
               <NavBar />
               <main className="flex-1">
                 {children}
