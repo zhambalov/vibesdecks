@@ -4,11 +4,8 @@ import { MetadataRoute } from 'next'
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://vibesdecks.com'
 
-  // Get all public decks
+  // Get all decks
   const decks = await prisma.deck.findMany({
-    where: {
-      isPrivate: false
-    },
     select: {
       id: true,
       updatedAt: true
