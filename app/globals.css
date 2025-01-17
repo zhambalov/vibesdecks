@@ -31,7 +31,7 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 217.2 32.6% 17.5%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
@@ -130,4 +130,26 @@
 
 .w-48 {
   width: calc(12rem * 0.9); /* 12rem is default w-48, multiply by 0.9 for 90% */
+}
+
+.dark .ProseMirror pre {
+  background: hsl(var(--card));
+}
+
+.dark .ProseMirror code {
+  background: hsl(var(--card));
+}
+
+.dark .ProseMirror blockquote {
+  border-left-color: hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+}
+
+.dark button[type="submit"] {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.dark button[type="submit"]:hover {
+  background-color: hsl(var(--primary) / 0.9);
 }
