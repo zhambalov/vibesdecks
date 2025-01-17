@@ -335,8 +335,22 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
       for (const importedCard of importedCards) {
         const card = availableCards.find(c => c.id === importedCard.cardId);
         if (card) {
-          const count = colorCounts.get(card.color as DeckColor) || 0;
-          colorCounts.set(card.color as DeckColor, count + importedCard.quantity);
+          // Map card colors to deck colors
+          let deckColor: DeckColor = 'MIXED';
+          switch (card.color) {
+            case 'RED':
+            case 'BLUE':
+            case 'GREEN':
+            case 'YELLOW':
+            case 'PURPLE':
+              deckColor = card.color;
+              break;
+            default:
+              deckColor = 'MIXED';
+              break;
+          }
+          const count = colorCounts.get(deckColor) || 0;
+          colorCounts.set(deckColor, count + importedCard.quantity);
         }
       }
 
@@ -344,10 +358,16 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
       let maxCount = 0;
       for (const [color, count] of colorCounts.entries()) {
         console.log(`Color ${color}: ${count} cards`);
-        if (count > maxCount) {
+        if (count > maxCount && color !== 'MIXED') {
           maxCount = count;
           detectedColor = color;
         }
+      }
+
+      // If no single color has majority, set to MIXED
+      const totalCards = Array.from(colorCounts.values()).reduce((a, b) => a + b, 0);
+      if (maxCount <= totalCards * 0.5) {
+        detectedColor = 'MIXED';
       }
 
       console.log('Detected color:', detectedColor);
@@ -389,6 +409,43 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
         description: error instanceof Error ? error.message : "Failed to import deck. Make sure you've copied a valid deck from the game.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!username || !deckId) return;
+
+    const confirmed = window.confirm('Are you sure you want to delete this deck? This action cannot be undone.');
+    if (!confirmed) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/decks/${deckId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete deck');
+      }
+
+      router.push('/decks');
+      toast({
+        title: "Success",
+        description: "Deck deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting deck:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete deck",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -600,7 +657,20 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <Card className="card card-spacing">
-            <h2 className="h2 mb-4">{mode === 'edit' ? 'Edit' : 'Create New'} Deck</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="h2">{mode === 'edit' ? 'Edit' : 'Create New'} Deck</h2>
+              {mode === 'edit' && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={isLoading}
+                >
+                  Delete Deck
+                </Button>
+              )}
+            </div>
             
             {/* Mobile Cards Toggle */}
             <div className="sm:hidden mb-4">
@@ -827,14 +897,12 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="MIXED">Mixed</SelectItem>
                         <SelectItem value="RED">Red</SelectItem>
                         <SelectItem value="BLUE">Blue</SelectItem>
                         <SelectItem value="GREEN">Green</SelectItem>
                         <SelectItem value="YELLOW">Yellow</SelectItem>
                         <SelectItem value="PURPLE">Purple</SelectItem>
-                        <SelectItem value="GREY">Grey</SelectItem>
-                        <SelectItem value="ROD">Rod</SelectItem>
-                        <SelectItem value="RELIC">Relic</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

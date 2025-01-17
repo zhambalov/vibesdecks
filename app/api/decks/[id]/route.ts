@@ -211,15 +211,32 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  // Check for admin access
-  if (!await isAdmin(request)) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
-
   try {
+    const { username } = await request.json()
+    if (!username) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    // Get the deck and check ownership
+    const deck = await prisma.deck.findUnique({
+      where: { id: params.id },
+      include: {
+        author: {
+          select: { username: true }
+        }
+      }
+    })
+
+    if (!deck) {
+      return NextResponse.json({ error: 'Deck not found' }, { status: 404 })
+    }
+
+    // Check if the user is the deck creator or an admin
+    const isAdmin = await checkIsAdmin(request)
+    if (deck.author.username !== username && !isAdmin) {
+      return NextResponse.json({ error: 'Not authorized to delete this deck' }, { status: 403 })
+    }
+
     // Delete associated records first
     await prisma.$transaction([
       // Delete likes
@@ -248,4 +265,18 @@ export async function DELETE(
       { status: 500 }
     )
   }
+}
+
+async function checkIsAdmin(request: Request): Promise<boolean> {
+  const authHeader = request.headers.get('Authorization')
+  if (!authHeader) return false
+
+  const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64')
+    .toString()
+    .split(':')
+
+  return (
+    username === process.env.ADMIN_USERNAME && 
+    password === process.env.ADMIN_PASSWORD
+  )
 }
