@@ -167,6 +167,37 @@
   display: none;
 }
 
+/* Resizable image styles */
+.resizable-image {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  cursor: ew-resize;
+  transition: all 0.2s ease;
+}
+
+.resizable-image:hover {
+  box-shadow: 0 0 0 2px hsl(var(--primary));
+}
+
+.resizable-image::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background-color: hsl(var(--primary));
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.resizable-image:hover::after {
+  opacity: 1;
+}
+
 /* Keep other existing styles... */
 
 .prose.dark\:prose-invert {

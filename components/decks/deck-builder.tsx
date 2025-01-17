@@ -9,6 +9,7 @@ import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
 import TextStyle from '@tiptap/extension-text-style'
 import { FontSize } from './extensions/font-size'
+import { ResizableImage } from './extensions/resizable-image'
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -42,9 +43,9 @@ import {
   AlignRight,
   Type
 } from "lucide-react"
+
 import { useTheme } from 'next-themes'
 import './deck-builder.css'
-import { ResizableImage } from './extensions/resizable-image'
 import Youtube from '@tiptap/extension-youtube'
 
 interface CardOption {
@@ -583,27 +584,51 @@ export function DeckBuilder({ mode = 'create', deckId }: Props) {
           // Handle image resizing
           if (target.classList.contains('resizable-image')) {
             event.preventDefault();
+            const image = target as HTMLImageElement;
             const startX = event.clientX;
-            const startWidth = target.offsetWidth;
+            const startWidth = image.offsetWidth;
+
+            // Find the image node by traversing the document
+            let imagePos: number | null = null;
+            const { doc } = view.state;
+            doc.descendants((node, pos) => {
+              if (node.type.name === 'resizableImage') {
+                const domNode = view.nodeDOM(pos) as HTMLElement;
+                if (domNode === image) {
+                  imagePos = pos;
+                  return false; // Stop traversing
+                }
+              }
+              return true;
+            });
+
+            if (imagePos === null) {
+              return false;
+            }
 
             const handleMouseMove = (e: MouseEvent) => {
               const currentX = e.clientX;
               const diff = currentX - startX;
               const newWidth = Math.max(100, startWidth + diff);
               
-              // Find the image node and update its width
-              const { state } = view;
-              const { from } = state.selection;
-              const node = state.doc.nodeAt(from);
-              
-              if (node && node.type.name === 'resizableImage') {
-                editor?.chain().focus().setImageWidth(`${newWidth}px`).run();
-              }
+              // Update image width directly
+              image.style.width = `${newWidth}px`;
             };
 
             const handleMouseUp = () => {
               document.removeEventListener('mousemove', handleMouseMove);
               document.removeEventListener('mouseup', handleMouseUp);
+
+              // Update the node attributes after resizing
+              const { tr } = view.state;
+              const node = doc.nodeAt(imagePos!);
+              if (node) {
+                tr.setNodeMarkup(imagePos!, undefined, {
+                  ...node.attrs,
+                  width: `${image.offsetWidth}px`
+                });
+                view.dispatch(tr);
+              }
             };
 
             document.addEventListener('mousemove', handleMouseMove);
